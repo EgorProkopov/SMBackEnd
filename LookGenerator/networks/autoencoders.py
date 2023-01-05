@@ -62,8 +62,36 @@ class ClothesConvAutoEncoder(nn.Module):
     def encode(self, x):
         return self.encoder(x)
 
-    def train_and_val(self, dataloader, epoch_num=10):
-        pass
+    def train_and_val(self, train_dataloader, val_datalaoder, epoch_num=10):
+        train_history = []
+        val_history = []
+
+        optimizer = optim.Adam(self.net.parameters())
+        criterion = nn.MSELoss()
+
+        for epoch in range(epoch_num):
+            train_running_loss = 0.0
+            for data in train_dataloader:
+                outputs = self.net(data)
+                optimizer.zero_grad()
+                loss = criterion(outputs, data)
+                loss.backward()
+                optimizer.step()
+                train_running_loss += loss.item()
+
+            train_loss = train_running_loss/len(train_dataloader)
+            train_history.append(loss)
+            print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
+
+            val_running_loss = 0.0
+            for data in val_datalaoder:
+                outputs = self.net(data)
+                loss = criterion(outputs, data)
+                val_running_loss = loss.item()
+
+            val_loss = val_running_loss/len(val_datalaoder)
+            val_history.append(val_loss)
+            print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
 
 
 class SourceConvAutoEncoder(nn.Module):
@@ -75,6 +103,11 @@ class SourceConvAutoEncoder(nn.Module):
     def init_net(self):
         self.init_encoder()
         self.init_decoder()
+        self.net = nn.Sequential(
+            self.encoder,
+            self.decoder
+        )
+
 
     # Возможна проблема затухания градиентов
     def init_encoder(self):
@@ -135,6 +168,34 @@ class SourceConvAutoEncoder(nn.Module):
     def encode(self, x):
         return self.encoder(x)
 
-    def train_and_val(self, dataloader, epoch_num=10):
-        pass
+    def train_and_val(self, train_dataloader, val_datalaoder, epoch_num=10):
+        train_history = []
+        val_history = []
+
+        optimizer = optim.Adam(self.net.parameters())
+        criterion = nn.MSELoss()
+
+        for epoch in range(epoch_num):
+            train_running_loss = 0.0
+            for data in train_dataloader:
+                outputs = self.net(data)
+                optimizer.zero_grad()
+                loss = criterion(outputs, data)
+                loss.backward()
+                optimizer.step()
+                train_running_loss += loss.item()
+
+            train_loss = train_running_loss/len(train_dataloader)
+            train_history.append(loss)
+            print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
+
+            val_running_loss = 0.0
+            for data in val_datalaoder:
+                outputs = self.net(data)
+                loss = criterion(outputs, data)
+                val_running_loss = loss.item()
+
+            val_loss = val_running_loss/len(val_datalaoder)
+            val_history.append(val_loss)
+            print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
 
