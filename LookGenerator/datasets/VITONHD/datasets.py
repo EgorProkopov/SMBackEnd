@@ -1,3 +1,5 @@
+import random
+
 from torch.utils.data import Dataset
 import os
 import torch
@@ -57,7 +59,11 @@ class PersonSegmentationDataset(Dataset):
             idx = idx.tolist()
 
         result = []
+        random_seed = random.randint(0, 2**32)
+
         for directory, extension in self._dir_info:
+            random.seed(random_seed)
+            torch.manual_seed(random_seed)
             image = Image.open(os.path.normpath(os.path.join(
                 self.root_dir,
                 directory,
@@ -114,7 +120,11 @@ class ClothesSegmentationDataset(Dataset):
             idx = idx.tolist()
 
         result = []
+        random_seed = random.randint(0, 2**32)
+
         for directory, extension in self._dir_info:
+            random.seed(random_seed)
+            torch.manual_seed(random_seed)
             image = Image.open(os.path.normpath(os.path.join(
                 self.root_dir,
                 directory,
