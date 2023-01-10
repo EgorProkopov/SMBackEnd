@@ -12,8 +12,7 @@ class ConvModule3x3(nn.Module):
     def init_net(self, in_channels, have_bias):
         self.net = nn.Sequential(
             nn.Conv2d(in_channels, 2*in_channels, kernel_size=3, padding=1, bias=have_bias),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
+            nn.ReLU()
         )
 
     def init_weights(self, have_bias):
@@ -43,9 +42,7 @@ class ConvModule5x5(ConvModule3x3):
 
                 nn.Conv2d(2*in_channels, 2*in_channels, kernel_size=3, padding=1, bias=have_bias),
                 nn.Dropout2d(p=0.33),
-                nn.ReLU(),
-
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.ReLU()
             )
         else:
             self.net = nn.Sequential(
@@ -53,9 +50,7 @@ class ConvModule5x5(ConvModule3x3):
                 nn.ReLU(),
 
                 nn.Conv2d(2*in_channels, 2*in_channels, kernel_size=3, padding=1, bias=have_bias),
-                nn.ReLU(),
-
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.ReLU()
             )
 
 
@@ -67,8 +62,6 @@ class ConvTransposeModule5x5(nn.Module):
 
     def init_net(self, in_channels, have_bias):
         self.net = nn.Sequential(
-            nn.MaxUnpool2d(kernel_size=2, stride=2),
-            
             nn.ConvTranspose2d(in_channels, in_channels/2, kernel_size=3, padding=1, bias=have_bias),
             nn.ReLU(),
 
@@ -102,9 +95,7 @@ class ConvModule7x7(ConvModule3x3):
 
                 nn.Conv2d(2*in_channels, 2*in_channels, kernel_size=3, padding=1, bias=have_bias),
                 nn.Dropout2d(p=0.33),
-                nn.ReLU(),
-
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.ReLU()
             )
 
         else:
@@ -116,9 +107,7 @@ class ConvModule7x7(ConvModule3x3):
                 nn.ReLU(),
 
                 nn.Conv2d(2*in_channels, 2*in_channels, kernel_size=3, padding=1, bias=have_bias),
-                nn.ReLU(),
-
-                nn.MaxPool2d(kernel_size=2, stride=2)
+                nn.ReLU()
             )
 
 
@@ -130,8 +119,6 @@ class ConvTransposeModule7x7(ConvTransposeModule5x5):
 
     def init_net(self, in_channels, have_bias):
         self.net = nn.Sequential(
-            nn.MaxUnpool2d(kernel_size=2, stride=2), 
-
             nn.ConvTranspose2d(in_channels, in_channels/2, kernel_size=3, padding=1, bias=have_bias),
             nn.ReLU(),
 

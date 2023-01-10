@@ -24,32 +24,42 @@ class ClothesConvAutoEncoder(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1),
             nn.Dropout2d(p=0.33),
             nn.ReLU(),
-
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
             nn.Dropout2d(p=0.33),
             nn.ReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             ConvModule7x7(in_channels=32, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             ConvModule7x7(in_channels=64, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             ConvModule7x7(in_channels=128, have_dropout=True),
-            ConvModule7x7(in_channels=256, have_dropout=True)
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            ConvModule7x7(in_channels=256, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
     def init_decoder(self):
         self.decoder = nn.Sequential(
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=512, have_dropout=True),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=256, have_dropout=True),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=128, have_dropout=True),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=64, have_dropout=True),
 
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-
             nn.ConvTranspose2d(in_channels=32, out_channels=16, kernel_size=3, padding=1),
             nn.ReLU(),
-
-            nn.ConvTranspose2d(in_channels=16, in_channels=3, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(in_channels=16, out_channels=3, kernel_size=3, padding=1),
             nn.ReLU()
         )
 
@@ -115,18 +125,25 @@ class SourceConvAutoEncoder(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1),
             nn.Dropout2d(p=0.33),
             nn.ReLU(),
-
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
             nn.Dropout2d(p=0.33),
             nn.ReLU(),
-
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             ConvModule7x7(in_channels=32, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             ConvModule7x7(in_channels=64, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             ConvModule7x7(in_channels=128, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             ConvModule7x7(in_channels=256, have_dropout=True),
-            ConvModule7x7(in_channels=512, have_dropout=True), #out: 1024 channels
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            ConvModule7x7(in_channels=512, have_dropout=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), #out: 1024 channels
 
             nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, padding=1),
             nn.ReLU(),
@@ -141,21 +158,29 @@ class SourceConvAutoEncoder(nn.Module):
     # Возможна проблема переобучения декодера, нужна регуляризация
     def init_decoder(self):
         self.decoder = nn.Sequential(
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=1024),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=512),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=256),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=128),
+
+            nn.MaxUnpool2d(kernel_size=2, stride=2),
             ConvTransposeModule7x7(in_channels=64),
 
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-
             nn.ConvTranspose2d(in_channels=32, out_channels=16, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(in_channels=16, in_channels=8, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(in_channels=16, out_channels=8, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(in_channels=8, in_channels=4, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(in_channels=8, out_channels=4, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(in_channels=4, in_channels=3, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(in_channels=4, out_channels=3, kernel_size=3, padding=1),
             nn.ReLU()
         )
 
