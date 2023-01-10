@@ -72,7 +72,7 @@ class ClothesConvAutoEncoder(nn.Module):
     def encode(self, x):
         return self.encoder(x)
 
-    def train_and_val(self, train_dataloader, val_datalaoder, epoch_num=10):
+    def train_and_val(self, train_dataloader, val_dataloader, epoch_num=10):
         train_history = []
         val_history = []
 
@@ -90,16 +90,16 @@ class ClothesConvAutoEncoder(nn.Module):
                 train_running_loss += loss.item()
 
             train_loss = train_running_loss/len(train_dataloader)
-            train_history.append(loss)
+            train_history.append(train_loss)
             print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
 
             val_running_loss = 0.0
-            for data in val_datalaoder:
+            for data in val_dataloader:
                 outputs = self.net(data)
                 loss = criterion(outputs, data)
                 val_running_loss = loss.item()
 
-            val_loss = val_running_loss/len(val_datalaoder)
+            val_loss = val_running_loss/len(val_dataloader)
             val_history.append(val_loss)
             print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
 
@@ -211,7 +211,7 @@ class SourceConvAutoEncoder(nn.Module):
                 train_running_loss += loss.item()
 
             train_loss = train_running_loss/len(train_dataloader)
-            train_history.append(loss)
+            train_history.append(train_history)
             print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
 
             val_running_loss = 0.0
