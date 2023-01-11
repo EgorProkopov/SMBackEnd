@@ -59,7 +59,7 @@ class PersonSegmentationDataset(Dataset):
             idx = idx.tolist()
 
         result = []
-        random_seed = random.randint(0, 2**32)
+        random_seed = random.randint(0, 2 ** 32)
 
         for directory, extension in self._dir_info:
             random.seed(random_seed)
@@ -120,7 +120,7 @@ class ClothesSegmentationDataset(Dataset):
             idx = idx.tolist()
 
         result = []
-        random_seed = random.randint(0, 2**32)
+        random_seed = random.randint(0, 2 ** 32)
 
         for directory, extension in self._dir_info:
             random.seed(random_seed)
