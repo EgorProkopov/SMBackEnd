@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from modules import ConvModule7x7, ConvTransposeModule7x7
+from LookGenerator.networks.modules import ConvModule7x7, ConvTransposeModule7x7
 
 
 class ClothesConvAutoEncoder(nn.Module):
     def __init__(self):
         super(ClothesConvAutoEncoder).__init__()
-        self.inin_net()
+        self.init_net()
         #self.init_weights()
 
     def init_net(self):
