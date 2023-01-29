@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from modules import ConvModule5x5BN
+from LookGenerator.networks.modules import ConvModule5x5BN
 
 
 class UNet(nn.Module):
