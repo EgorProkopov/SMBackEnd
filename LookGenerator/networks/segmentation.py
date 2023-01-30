@@ -5,12 +5,12 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from LookGenerator.networks.modules import ConvModule5x5BN
+from LookGenerator.networks.modules import Conv5x5
 
 
 class UNet(nn.Module):
     def __init__(
-            self, in_channels=3, out_channels=3, features=[64, 128, 256, 512],
+            self, in_channels=3, out_channels=3, features=(64, 128, 256, 512)
     ):
         super(UNet, self).__init__()
         self.ups = nn.ModuleList()
@@ -19,19 +19,21 @@ class UNet(nn.Module):
 
         # Encoder
         for feature in features:
-            self.downs.append(ConvModule5x5BN(in_channels, feature))
+            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True))
             in_channels = feature
 
         # Decoder
+        in_channels = features[-1]*2
         for feature in reversed(features):
             self.ups.append(
                 nn.ConvTranspose2d(
-                    feature*2, feature, kernel_size=2, stride=2,
+                    in_channels, feature, kernel_size=2, stride=2,
                 )
             )
-            self.ups.append(ConvModule5x5BN(feature*2, feature))
+            in_channels = feature
+            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True))
 
-        self.bottleneck = ConvModule5x5BN(features[-1], features[-1]*2)
+        self.bottleneck = Conv5x5(features[-1], features[-1]*2, batch_norm=True)
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
     def forward(self, x):
@@ -58,7 +60,7 @@ class UNet(nn.Module):
         return self.final_conv(x)
 
 
-def train_UNet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=5):
+def train_unet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=5):
     model = model.to(device)
 
     train_history = []
@@ -86,7 +88,7 @@ def train_UNet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=
         print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
 
         val_running_loss = 0.0
-        for data in val_dataloader:
+        for data, targets in val_dataloader:
             data = data.to(device)
             targets = targets.to(device)
 
@@ -98,12 +100,4 @@ def train_UNet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=
         val_history.append(val_loss)
         print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
 
-
-# TODO: написать тест
-def test_UNet():
-    pass
-
-
-if __name__ == "__main__":
-    test_UNet()
 
