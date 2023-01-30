@@ -23,14 +23,13 @@ class UNet(nn.Module):
             in_channels = feature
 
         # Decoder
-        in_channels = features[-1]*2
         for feature in reversed(features):
             self.ups.append(
                 nn.ConvTranspose2d(
-                    in_channels, feature, kernel_size=2, stride=2,
+                    feature*2, feature, kernel_size=2, stride=2,
                 )
             )
-            in_channels = feature
+
             self.ups.append(Conv5x5(feature*2, feature, batch_norm=True))
 
         self.bottleneck = Conv5x5(features[-1], features[-1]*2, batch_norm=True)
@@ -101,3 +100,5 @@ def train_unet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=
         print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
 
 
+if __name__ == "__main__":
+    model = UNet()
