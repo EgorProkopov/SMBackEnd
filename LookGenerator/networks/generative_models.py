@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from LookGenerator.networks.modules import Conv3x3, Conv5x5, ConvTranspose5x5, Conv7x7, ConvTranspose7x7
+from LookGenerator.networks.modules import Conv5x5
 
 
 # TODO: test it
@@ -41,28 +41,28 @@ class EncoderDecoder(nn.Module):
         self.decoder_list = [
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=4, stride=4),                                        # in:8x6  out:32x24
-                ConvTranspose5x5(in_channels=512+512, out_channels=256, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=512+512, out_channels=256, batch_norm=True, skip_conn=True)
             ),
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=2, stride=2),                                        # in:32x24  out:64x48
-                ConvTranspose5x5(in_channels=256+256, out_channels=128, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=256+256, out_channels=128, batch_norm=True, skip_conn=True)
             ),
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=2, stride=2),                                        # in:64x48  out:128x96
-                ConvTranspose5x5(in_channels=128+128, out_channels=64, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=128+128, out_channels=64, batch_norm=True, skip_conn=True)
             )
         ]
 
         self.human_decoder = nn.Sequential(
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-            ConvTranspose5x5(in_channels=60, out_channels=20, batch_norm=True, skip_conn=True),
+            Conv5x5(in_channels=60, out_channels=20, batch_norm=True, skip_conn=True),
             Conv5x5(in_channels=20, out_channels=3, batch_norm=True, skip_conn=True)
         )
 
         self.clothes_mask_decoder = nn.Sequential(
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-            ConvTranspose5x5(in_channels=4, out_channels=2, batch_norm=True, skip_conn=True),
-            Conv3x3(in_channels=2, out_channels=1, batch_norm=True)
+            Conv5x5(in_channels=4, out_channels=2, batch_norm=True, skip_conn=True),
+            Conv5x5(in_channels=2, out_channels=1, batch_norm=True)
         )
 
     def forward(self, x):
