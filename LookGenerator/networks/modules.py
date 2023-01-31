@@ -10,7 +10,7 @@ class Conv3x3(nn.Module):
                                   dropout, batch_norm, bias, activation_func)
 
     def _init_net(self, in_channels, out_channels, dropout, batch_norm, bias, have_activation_func):
-        net_list = [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=3, bias=bias)]
+        net_list = [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=bias)]
         if dropout:
             net_list.append(nn.Dropout2d(p=0.33))
         if batch_norm:
@@ -39,7 +39,7 @@ class ConvTranspose3x3(nn.Module):
                                   dropout, batch_norm, bias, activation_func)
 
     def _init_net(self, in_channels, out_channels, dropout, batch_norm, bias, have_activation_func):
-        net_list = [nn.ConvTranspose2d(in_channels, out_channels, kernel_size=3, bias=bias)]
+        net_list = [nn.ConvTranspose2d(in_channels, out_channels, kernel_size=3, padding=1, bias=bias)]
         if dropout:
             net_list.append(nn.Dropout2d(p=0.33))
         if batch_norm:
