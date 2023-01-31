@@ -9,9 +9,19 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 
 
 class UNet(nn.Module):
+    """
+    UNet model for segmentation with changeable number of layers
+    """
     def __init__(
             self, in_channels=3, out_channels=1, features=(64, 128, 256, 512)
     ):
+        """
+
+        Args:
+            in_channels: Number of channels in the input image
+            out_channels: Number of channels in the out mask
+            features: tuple of layers activation maps numbers
+        """
         super(UNet, self).__init__()
         self.ups = nn.ModuleList()
         self.downs = nn.ModuleList()
@@ -32,6 +42,14 @@ class UNet(nn.Module):
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
     def forward(self, x):
+        """
+        Forward propagation method of neural network.
+        Args:
+            x: mini-batch of data
+
+        Returns:
+            Result of network working
+        """
         skip_connections = []
 
         for down in self.downs:
@@ -56,6 +74,18 @@ class UNet(nn.Module):
 
 
 def train_unet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=5):
+    """
+    Function for training and validation segmentation model
+    Args:
+        model: segmentation model for training
+        train_dataloader: dataloader of train dataset
+        val_dataloader: dataloader of val dataset
+        device: device on which calculations will be performed
+        epoch_num: number of training epochs
+
+    Returns:
+
+    """
     model = model.to(device)
 
     train_history = []

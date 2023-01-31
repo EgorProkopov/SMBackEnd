@@ -6,66 +6,75 @@ from LookGenerator.networks.modules import Conv5x5
 
 # TODO: test it
 class EncoderDecoder(nn.Module):
+    """Model of encoder-decoder part of virtual try on model"""
     def __init__(self):
         super(EncoderDecoder, self).__init__()
         self.pose_encoder = nn.Sequential(
-            Conv5x5(in_channels=22, out_channels=30, batch_norm=True, skip_conn=True),
-            Conv5x5(in_channels=30, out_channels=60, batch_norm=True, skip_conn=True),
+            Conv5x5(in_channels=22, out_channels=30, batch_norm=True, res_conn=True),
+            Conv5x5(in_channels=30, out_channels=60, batch_norm=True, res_conn=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.clothes_encoder = nn.Sequential(
-            Conv5x5(in_channels=3, out_channels=4, batch_norm=True, skip_conn=True),
+            Conv5x5(in_channels=3, out_channels=4, batch_norm=True, res_conn=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.encoder_list = [
             nn.Sequential(
-                Conv5x5(in_channels=64, out_channels=128, batch_norm=True, skip_conn=True),
+                Conv5x5(in_channels=64, out_channels=128, batch_norm=True, res_conn=True),
                 nn.MaxPool2d(kernel_size=2, stride=2)
             ),                                          # in:128x96  out:64x48
             nn.Sequential(
-                Conv5x5(in_channels=128, out_channels=256, batch_norm=True, skip_conn=True),
+                Conv5x5(in_channels=128, out_channels=256, batch_norm=True, res_conn=True),
                 nn.MaxPool2d(kernel_size=2, stride=2)
             ),                                          # in:64x48  out:32x24
             nn.Sequential(
-                Conv5x5(in_channels=256, out_channels=512, batch_norm=True, skip_conn=True),
+                Conv5x5(in_channels=256, out_channels=512, batch_norm=True, res_conn=True),
                 nn.MaxPool2d(kernel_size=4, stride=4)
             )                                           # in:32x24  out:8x6
         ]
 
         self.bottle_neck = nn.Sequential(
-            Conv5x5(in_channels=512, out_channels=512, batch_norm=True, skip_conn=True)         # in:8x6  out:8x6
+            Conv5x5(in_channels=512, out_channels=512, batch_norm=True, res_conn=True)         # in:8x6  out:8x6
         )
 
         self.decoder_list = [
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=4, stride=4),                                        # in:8x6  out:32x24
-                Conv5x5(in_channels=512+512, out_channels=256, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=512+512, out_channels=256, batch_norm=True, res_conn=True)
             ),
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=2, stride=2),                                        # in:32x24  out:64x48
-                Conv5x5(in_channels=256+256, out_channels=128, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=256+256, out_channels=128, batch_norm=True, res_conn=True)
             ),
             nn.Sequential(
                 nn.MaxUnpool2d(kernel_size=2, stride=2),                                        # in:64x48  out:128x96
-                Conv5x5(in_channels=128+128, out_channels=64, batch_norm=True, skip_conn=True)
+                Conv5x5(in_channels=128+128, out_channels=64, batch_norm=True, res_conn=True)
             )
         ]
 
         self.human_decoder = nn.Sequential(
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-            Conv5x5(in_channels=60, out_channels=20, batch_norm=True, skip_conn=True),
-            Conv5x5(in_channels=20, out_channels=3, batch_norm=True, skip_conn=True)
+            Conv5x5(in_channels=60, out_channels=20, batch_norm=True, res_conn=True),
+            Conv5x5(in_channels=20, out_channels=3, batch_norm=True, res_conn=True)
         )
 
         self.clothes_mask_decoder = nn.Sequential(
             nn.MaxUnpool2d(kernel_size=2, stride=2),
-            Conv5x5(in_channels=4, out_channels=2, batch_norm=True, skip_conn=True),
+            Conv5x5(in_channels=4, out_channels=2, batch_norm=True, res_conn=True),
             Conv5x5(in_channels=2, out_channels=1, batch_norm=True)
         )
 
     def forward(self, x):
+        """
+        Forward propagation method of neural network.
+        Args:
+            x: mini-batch of data
+
+        Returns:
+            Result of network working
+        """
         pose_pack = x[0]
         clothes = x[1]
 
