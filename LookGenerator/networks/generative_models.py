@@ -72,7 +72,7 @@ class EncoderDecoder(nn.Module):
         pose_out = self.pose_encoder(pose_pack)
         clothes_out = self.clothes_encoder(clothes)
 
-        out = torch.cat((pose_out, clothes_out), dim=0)
+        out = torch.cat((pose_out, clothes_out), dim=1)
 
         skip_connections = [out]
 
@@ -84,7 +84,7 @@ class EncoderDecoder(nn.Module):
         skip_connections = skip_connections[::-1]
 
         for decoder_module, skip_connection in zip(self.decoder_list, skip_connections):
-            out = torch.cat((out, skip_connection), dim=0)
+            out = torch.cat((out, skip_connection), dim=1)
             out = decoder_module(out)
 
         human_out = out[0:60]
