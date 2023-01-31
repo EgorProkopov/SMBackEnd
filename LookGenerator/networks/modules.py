@@ -65,14 +65,14 @@ class Conv5x5(nn.Module):
             Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
             Conv3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
         )
+        self._ReLU = nn.ReLU()
 
     def forward(self, x):
+        out = self.net(x)
         if self.skip_conn:
             shortcut = x
-            out = self.net(x)
-            return nn.ReLU(out + shortcut)
-        else:
-            return nn.ReLU(self.net(x))
+            return self._ReLU(out + shortcut)
+        return self._ReLU(out)
 
 
 class ConvTranspose5x5(nn.Module):
