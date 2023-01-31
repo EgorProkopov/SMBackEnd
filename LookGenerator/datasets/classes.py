@@ -41,7 +41,7 @@ class PersonSegmentationDataset(Dataset):
         ]
         self._dir_info = list(filter(None, dir_info))
 
-    def __getitem__(self, idx) -> List[torch.Tensor]:
+    def __getitem__(self, idx) -> torch.Tensor:
         """
         Args:
             idx: The index of data sample
@@ -74,7 +74,7 @@ class PersonSegmentationDataset(Dataset):
                 image = self.transform(image)
             result.append(image)
 
-        return result
+        return torch.cat(result)
 
     def __len__(self):
         return len(self._list_of_files)
