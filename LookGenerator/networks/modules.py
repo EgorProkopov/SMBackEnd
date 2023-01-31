@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 
-class Conv3x3(nn.Module):
+class ConvEncode3x3(nn.Module):
     def __init__(self, in_channels, out_channels,
                  dropout=False, batch_norm=False, bias=True, activation_func=True):
-        super(Conv3x3, self).__init__()
+        super(ConvEncode3x3, self).__init__()
         self.net = self._init_net(in_channels, out_channels,
                                   dropout, batch_norm, bias, activation_func)
 
@@ -31,10 +31,10 @@ class Conv3x3(nn.Module):
         return self.net(x)
 
 
-class ConvTranspose3x3(nn.Module):
+class ConvDecode3x3(nn.Module):
     def __init__(self, in_channels, out_channels,
                  dropout=False, batch_norm=False, bias=True, activation_func=True):
-        super(ConvTranspose3x3, self).__init__()
+        super(ConvDecode3x3, self).__init__()
         self.net = self._init_net(in_channels, out_channels,
                                   dropout, batch_norm, bias, activation_func)
 
@@ -56,14 +56,14 @@ class ConvTranspose3x3(nn.Module):
         return self.net(x)
 
 
-class Conv5x5(nn.Module):
+class ConvEncode5x5(nn.Module):
     def __init__(self, in_channels, out_channels,
                  dropout=False, batch_norm=False, bias=True, skip_conn=False):
-        super(Conv5x5, self).__init__()
+        super(ConvEncode5x5, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            ConvEncode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvEncode3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
         )
         self._ReLU = nn.ReLU()
 
@@ -75,13 +75,13 @@ class Conv5x5(nn.Module):
         return self._ReLU(out)
 
 
-class ConvTranspose5x5(nn.Module):
+class ConvDecode5x5(nn.Module):
     def __init__(self, in_channels, out_channels, dropout=False, batch_norm=False, bias=True, skip_conn=False):
-        super(ConvTranspose5x5, self).__init__()
+        super(ConvDecode5x5, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
-            ConvTranspose3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            ConvTranspose3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            ConvDecode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvDecode3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
         )
 
     def forward(self, x):
@@ -93,14 +93,14 @@ class ConvTranspose5x5(nn.Module):
             return nn.ReLU(self.net(x))
 
 
-class Conv7x7(nn.Module):
+class ConvEncode7x7(nn.Module):
     def __init__(self, in_channels, out_channels, dropout=False, batch_norm=False, bias=True, skip_conn=False):
-        super(Conv7x7, self).__init__()
+        super(ConvEncode7x7, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            ConvEncode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvEncode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvEncode3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
         )
 
     def forward(self, x):
@@ -112,15 +112,15 @@ class Conv7x7(nn.Module):
             return nn.ReLU(self.net(x))
 
 
-class ConvTranspose7x7(nn.Module):
+class ConvDecode7x7(nn.Module):
     def __init__(self, in_channels, out_channels,
                  dropout=False, batch_norm=False, bias=True, skip_conn=False):
-        super(ConvTranspose7x7, self).__init__()
+        super(ConvDecode7x7, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
-            ConvTranspose3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            ConvTranspose3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            ConvTranspose3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            ConvDecode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvDecode3x3(in_channels, out_channels, dropout, batch_norm, bias),
+            ConvDecode3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
         )
 
     def forward(self, x):
