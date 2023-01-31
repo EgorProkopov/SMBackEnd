@@ -5,17 +5,17 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from LookGenerator.networks.modules import Conv5x5
+from LookGenerator.networks.modules import Conv3x3, Conv5x5
 
 
 class UNet(nn.Module):
     def __init__(
-            self, in_channels=3, out_channels=3, features=(64, 128, 256, 512)
+            self, in_channels=3, out_channels=1, features=(64, 128, 256, 512)
     ):
         super(UNet, self).__init__()
         self.ups = nn.ModuleList()
         self.downs = nn.ModuleList()
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=True)
 
         # Encoder
         for feature in features:
@@ -24,15 +24,11 @@ class UNet(nn.Module):
 
         # Decoder
         for feature in reversed(features):
-            self.ups.append(
-                nn.ConvTranspose2d(
-                    feature*2, feature, kernel_size=2, stride=2,
-                )
-            )
+            self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
             self.ups.append(Conv5x5(feature*2, feature, batch_norm=True))
 
-        self.bottleneck = Conv5x5(features[-1], features[-1]*2, batch_norm=True)
+        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True)
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
     def forward(self, x):
@@ -41,20 +37,20 @@ class UNet(nn.Module):
         for down in self.downs:
             x = down(x)
             skip_connections.append(x)
-            x = self.pool(x)
+            x, indices = self.pool(x)
 
         x = self.bottleneck(x)
         skip_connections = skip_connections[::-1]
 
-        for idx in range(0, len(self.ups), 2):
-            x = self.ups[idx](x)
-            skip_connection = skip_connections[idx//2]
+        for i in range(0, len(self.ups), 2):
+            x = self.ups[i](x)
+            skip_connection = skip_connections[i // 2]
 
             if x.shape != skip_connection.shape:
                 x = transforms.functional.resize(x, size=skip_connection.shape[2:])
 
             concat_skip = torch.cat((skip_connection, x), dim=1)
-            x = self.ups[idx+1](concat_skip)
+            x = self.ups[i + 1](concat_skip)
 
         return self.final_conv(x)
 
