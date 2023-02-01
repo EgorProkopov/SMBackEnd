@@ -27,7 +27,7 @@ def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> 
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transform=None, densepose=True, parse_agnostic=True, parse=True):
+    def __init__(self, image_dir: str, transform=None):
         """
         Parameters:
             image_dir (str): Directory with all images
@@ -39,13 +39,9 @@ class PersonSegmentationDataset(Dataset):
                 Names of files at these directories must be equal for data of one sample.
 
             transform (callable, optional): A transform to be applied on images. Default: None
-            densepose (bool, optional): For usage of segmentation data at image-densepose. Default: True
-            parse_agnostic (bool, optional): For usage of segmentation data at image-parse-agnostic. Default: True
-            parse (bool, optional): For usage of segmentation data at parse-v3. Default: True
         """
 
         super().__init__()
-        assert densepose or parse_agnostic or parse, "At least one of flags must be set at True!"
 
         self.root = image_dir
         self.transform = transform
@@ -55,9 +51,9 @@ class PersonSegmentationDataset(Dataset):
 
         dir_info = [
             DirInfo("image", ".jpg"),
-            DirInfo("image-densepose", ".jpg") if densepose else None,
-            DirInfo("image-parse-agnostic-v3.2", ".png") if parse_agnostic else None,
-            DirInfo("image-parse-v3", ".png") if parse else None,
+            DirInfo("image-densepose", ".jpg"),
+            DirInfo("image-parse-agnostic-v3.2", ".png"),
+            DirInfo("image-parse-v3", ".png"),
         ]
         self._dir_info = list(filter(None, dir_info))
 
@@ -67,12 +63,11 @@ class PersonSegmentationDataset(Dataset):
             idx: The index of data sample
 
         Returns:
-            Returns a list of torch.Tensor objects in order:
-                image of person
-                image of densepose segmentation
-                image of parse agnostic segmentation
-                image of parse segmentation
-            if corresponded flags are True
+            Returns a dict of torch.Tensor objects in order:
+                "image": image of person
+                "densepose": image of densepose segmentation
+                "parse_agnostic": image of parse agnostic segmentation
+                "parse": image of parse segmentation
         """
 
         seed = random.seed()
