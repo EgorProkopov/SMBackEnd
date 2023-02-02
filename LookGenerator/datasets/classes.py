@@ -14,7 +14,7 @@ class DirInfo:
     extension: str
 
 
-def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
+def _load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
     return Image.open(
         os.path.join(
             root_dir,
@@ -49,13 +49,12 @@ class PersonSegmentationDataset(Dataset):
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
-        dir_info = [
-            DirInfo("image", ".jpg"),
-            DirInfo("image-densepose", ".jpg"),
-            DirInfo("image-parse-agnostic-v3.2", ".png"),
-            DirInfo("image-parse-v3", ".png"),
-        ]
-        self._dir_info = list(filter(None, dir_info))
+        self._dir_info = {
+            "image": DirInfo("image", ".jpg"),
+            "densepose": DirInfo("image-densepose", ".jpg"),
+            "parse-agnostic": DirInfo("image-parse-agnostic-v3.2", ".png"),
+            "parse": DirInfo("image-parse-v3", ".png"),
+        }
 
     def __getitem__(self, idx) -> Dict[str, torch.Tensor]:
         """
@@ -76,37 +75,20 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        image = load_image(self.root, self._dir_info[0].name, self._files_list[idx], self._dir_info[0].extension)
-        image = to_tensor(image)
-
-        densepose = load_image(self.root, self._dir_info[1].name, self._files_list[idx], self._dir_info[1].extension)
-        densepose = to_tensor(densepose)
-
-        parse_agnostic = load_image(self.root, self._dir_info[2].name, self._files_list[idx],
-                                    self._dir_info[2].extension)
-        parse_agnostic = to_tensor(parse_agnostic)
-
-        parse = load_image(self.root, self._dir_info[3].name, self._files_list[idx], self._dir_info[3].extension)
-        parse = to_tensor(parse)
-
-        if self.transform:
-            torch.manual_seed(seed)
-            image = self.transform(image)
-
-            torch.manual_seed(seed)
-            densepose = self.transform(densepose)
-
-            torch.manual_seed(seed)
-            parse_agnostic = self.transform(parse_agnostic)
-
-            torch.manual_seed(seed)
-            parse = self.transform(parse)
+        images = []
+        for key in self._dir_info.keys():
+            image = _load_image(self.root, self._dir_info[key].name, self._files_list[idx], self._dir_info[key].extension)
+            image = to_tensor(image)
+            if self.transform:
+                torch.manual_seed(seed)
+                image = self.transform(image)
+            images.append(image)
 
         sample = {
-            "image": image,
-            "densepose": densepose,
-            "parse_agnostic": parse_agnostic,
-            "parse": parse
+            "image": images[0],
+            "densepose": images[1],
+            "parse_agnostic": images[2],
+            "parse": images[3]
         }
 
         return sample
@@ -131,16 +113,16 @@ class ClothesSegmentationDataset(Dataset):
         """
 
         super().__init__()
-        self.root_dir = image_dir
+        self.root = image_dir
         self.transform = transform
 
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
-        self._dir_info = [
-            DirInfo("cloth", ".jpg"),
-            DirInfo("cloth-mask", ".jpg"),
-        ]
+        self._dir_info = {
+            "image": DirInfo("cloth", ".jpg"),
+            "mask": DirInfo("cloth-mask", ".jpg"),
+        }
 
     def __getitem__(self, idx) -> Dict[str, torch.Tensor]:
         """
@@ -156,22 +138,25 @@ class ClothesSegmentationDataset(Dataset):
         """
 
         seed = random.seed()
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
         to_tensor = ToTensor()
 
-        image = load_image(self.root_dir, self._dir_info[0].name, self._files_list[idx], self._dir_info[0].extension)
-        image = to_tensor(image)
+        images = []
+        for key in self._dir_info.keys():
+            image = _load_image(self.root, self._dir_info[key].name, self._files_list[idx],
+                                self._dir_info[key].extension)
+            image = to_tensor(image)
+            if self.transform:
+                torch.manual_seed(seed)
+                image = self.transform(image)
+            images.append(image)
 
-        mask = load_image(self.root_dir, self._dir_info[1].name, self._files_list[idx], self._dir_info[1].extension)
-        mask = to_tensor(mask)
-
-        if self.transform:
-            torch.manual_seed(seed)
-            image = self.transform(image)
-
-            torch.manual_seed(seed)
-            mask = self.transform(mask)
-
-        sample = {"image": image, "mask": mask}
+        sample = {
+            "image": images[0],
+            "mask": images[1]
+        }
 
         return sample
 
