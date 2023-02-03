@@ -31,8 +31,8 @@ class EncoderDecoder(nn.Module):
             ),                                          # in:64x48  out:32x24
             nn.Sequential(
                 Conv5x5(in_channels=256, out_channels=512, batch_norm=True, res_conn=True),
-                nn.MaxPool2d(kernel_size=4, stride=4)
-            )                                           # in:32x24  out:8x6
+                nn.MaxPool2d(kernel_size=2, stride=2)
+            )                                           # in:32x24  out:16x12
         ]
 
         self.bottle_neck = nn.Sequential(
