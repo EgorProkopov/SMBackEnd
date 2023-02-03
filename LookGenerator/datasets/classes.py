@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import os
 import torch
 from PIL import Image
-from typing import Dict
+from typing import Dict, Tuple, Any
 from torchvision.transforms import ToTensor
 from dataclasses import dataclass
 
@@ -27,7 +27,7 @@ def _load_image(root_dir: str, dir_name: str, file_name: str, extension: str) ->
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transform=None):
+    def __init__(self, image_dir: str, transform=None, densepose=False, parse_agnostic=False, parse=False):
         """
         Parameters:
             image_dir (str): Directory with all images
@@ -50,13 +50,16 @@ class PersonSegmentationDataset(Dataset):
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
         self._dir_info = {
-            "image": DirInfo("image", ".jpg"),
-            "densepose": DirInfo("image-densepose", ".jpg"),
-            "parse-agnostic": DirInfo("image-parse-agnostic-v3.2", ".png"),
-            "parse": DirInfo("image-parse-v3", ".png"),
+            "image": DirInfo("image", ".jpg")
         }
+        if densepose:
+            self._dir_info["denspose"] = DirInfo("image-densepose", ".jpg")
+        if parse_agnostic:
+            self._dir_info["parse-agnostic"] = DirInfo("image-parse-agnostic-v3.2", ".png")
+        if parse:
+            self._dir_info["parse"] = DirInfo("image-parse-v3", ".png")
 
-    def __getitem__(self, idx) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx) -> tuple[Any, ...]:
         """
         Args:
             idx: The index of data sample
@@ -78,20 +81,19 @@ class PersonSegmentationDataset(Dataset):
         images = []
         for key in self._dir_info.keys():
             image = _load_image(self.root, self._dir_info[key].name, self._files_list[idx], self._dir_info[key].extension)
-            image = to_tensor(image)
             if self.transform:
                 torch.manual_seed(seed)
                 image = self.transform(image)
             images.append(image)
 
-        sample = {
-            "image": images[0],
-            "densepose": images[1],
-            "parse_agnostic": images[2],
-            "parse": images[3]
-        }
+        #sample = {
+        #    "image": images[0],
+        #    "densepose": images[1],
+        #    "parse_agnostic": images[2],
+        #    "parse": images[3]
+        #}
 
-        return sample
+        return tuple(images)
 
     def __len__(self):
         return len(self._files_list)
