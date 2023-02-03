@@ -73,25 +73,26 @@ class UNet(nn.Module):
         return self.final_conv(x)
 
 
-def train_unet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=5):
+def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5):
     """
     Function for training and validation segmentation model
     Args:
         model: segmentation model for training
         train_dataloader: dataloader of train dataset
         val_dataloader: dataloader of val dataset
+        optimizer: optimizer of the model
         device: device on which calculations will be performed
         epoch_num: number of training epochs
 
     Returns:
 
     """
+    device = torch.device(device)
     model = model.to(device)
 
     train_history = []
     val_history = []
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.CrossEntropyLoss()
 
     for epoch in range(epoch_num):
@@ -124,6 +125,8 @@ def train_unet(model, train_dataloader, val_dataloader, device='cpu', epoch_num=
         val_loss = val_running_loss/len(val_dataloader)
         val_history.append(val_loss)
         print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
+
+    return train_history, val_history
 
 
 if __name__ == "__main__":
