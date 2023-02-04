@@ -52,7 +52,7 @@ class PersonSegmentationDataset(Dataset):
 
         self._dir_info = {
             "image": DirInfo("image", ".jpg"),
-            "denspose": DirInfo("image-densepose", ".jpg"),
+            "densepose": DirInfo("image-densepose", ".jpg"),
             "parse-agnostic": DirInfo("image-densepose", ".jpg"),
             "parse": DirInfo("image-parse-v3", ".png")
         }

@@ -11,17 +11,25 @@ def test_person_segmentation():
     dataset = PersonSegmentationDataset(train_path)
     assert len(dataset) != 0, "Train dataset is empty or Dataset does not load any."
 
-    dataset = PersonSegmentationDataset(test_path)
+    dataset = PersonSegmentationDataset(test_path, segmentation_type="densepose")
     assert len(dataset) != 0, "Test dataset is empty or Dataset does not load any."
 
-    assert dataset[0]["image"].shape == (3, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['image'].shape}"
-    assert dataset[0]["densepose"].shape == (3, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['mask'].shape}"
-    assert dataset[0]["parse_agnostic"].shape == (1, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['mask'].shape}"
-    assert dataset[0]["parse"].shape == (1, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['mask'].shape}"
+    input_, target = dataset[0]
+
+    assert input_.shape == (3, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {input_.shape}"
+    assert target.shape == (3, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {target.shape}"
+
+    dataset = PersonSegmentationDataset(test_path, segmentation_type="parse")
+    _, target = dataset[0]
+    assert target.shape == (1, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {target.shape}"
+
+    dataset = PersonSegmentationDataset(test_path, segmentation_type="parse-agnostic")
+    _, target = dataset[0]
+    assert target.shape == (1, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {target.shape}"
 
 
 def test_cloth_segmentation():
@@ -34,9 +42,8 @@ def test_cloth_segmentation():
     dataset = ClothesSegmentationDataset(test_path)
     assert len(dataset) != 0, "Test dataset is empty or Dataset does not load any."
 
-    assert dataset[0]["image"].shape == (3, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['image'].shape}"
-    assert dataset[0]["mask"].shape == (1, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {dataset[0]['mask'].shape}"
-
-
+    input_, targets = dataset[0]
+    assert input_.shape == (3, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {input_.shape}"
+    assert targets.shape == (1, 1024, 768), \
+        f"Wrong tensor.shape. Expected (3, 1024, 768), got {targets.shape}"
