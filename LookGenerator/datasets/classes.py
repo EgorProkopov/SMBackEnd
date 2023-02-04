@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import os
 import torch
 from PIL import Image
-from typing import Dict, Tuple, Any
+from typing import Tuple
 from torchvision.transforms import ToTensor
 from dataclasses import dataclass
 
@@ -27,7 +27,7 @@ def _load_image(root_dir: str, dir_name: str, file_name: str, extension: str) ->
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transform=None, densepose=False, parse_agnostic=False, parse=False):
+    def __init__(self, image_dir: str, transform=None, segmentation_type="parse"):
         """
         Parameters:
             image_dir (str): Directory with all images
@@ -45,27 +45,25 @@ class PersonSegmentationDataset(Dataset):
 
         self.root = image_dir
         self.transform = transform
+        self.type = segmentation_type
 
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
         self._dir_info = {
-            "image": DirInfo("image", ".jpg")
+            "image": DirInfo("image", ".jpg"),
+            "denspose": DirInfo("image-densepose", ".jpg"),
+            "parse-agnostic": DirInfo("image-densepose", ".jpg"),
+            "parse": DirInfo("image-parse-v3", ".png")
         }
-        if densepose:
-            self._dir_info["denspose"] = DirInfo("image-densepose", ".jpg")
-        if parse_agnostic:
-            self._dir_info["parse-agnostic"] = DirInfo("image-parse-agnostic-v3.2", ".png")
-        if parse:
-            self._dir_info["parse"] = DirInfo("image-parse-v3", ".png")
 
-    def __getitem__(self, idx) -> tuple[Any, ...]:
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             idx: The index of data sample
 
         Returns:
-            Returns a dict of torch.Tensor objects in order:
+            Returns a tuple of torch.Tensor input and target with type:
                 "image": image of person
                 "densepose": image of densepose segmentation
                 "parse_agnostic": image of parse agnostic segmentation
@@ -78,22 +76,22 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        images = []
-        for key in self._dir_info.keys():
-            image = _load_image(self.root, self._dir_info[key].name, self._files_list[idx], self._dir_info[key].extension)
-            if self.transform:
-                torch.manual_seed(seed)
-                image = self.transform(image)
-            images.append(image)
+        input_ = _load_image(self.root, self._dir_info["image"].name, self._files_list[idx],
+                             self._dir_info["image"].extension)
+        input_ = to_tensor(input_)
 
-        #sample = {
-        #    "image": images[0],
-        #    "densepose": images[1],
-        #    "parse_agnostic": images[2],
-        #    "parse": images[3]
-        #}
+        target = _load_image(self.root, self._dir_info[self.type].name, self._files_list[idx],
+                             self._dir_info[self.type].extension)
+        target = to_tensor(target)
 
-        return tuple(images)
+        if self.transform:
+            torch.manual_seed(seed)
+            input_ = self.transform(input_)
+
+            torch.manual_seed(seed)
+            target = self.transform(target)
+
+        return input_, target
 
     def __len__(self):
         return len(self._files_list)
@@ -126,17 +124,15 @@ class ClothesSegmentationDataset(Dataset):
             "mask": DirInfo("cloth-mask", ".jpg"),
         }
 
-    def __getitem__(self, idx) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             idx: The index of data sample
 
         Returns:
-            Returns a dict of torch.Tensor objects:
-                {
-                    "image": torch.Tensor of cloth image
-                    "mask": torch.Tensor of cloth mask
-                }
+            Returns a tuple of torch.Tensor objects input and target where
+                input_: torch.Tensor of cloth image
+                target: torch.Tensor of cloth mask
         """
 
         seed = random.seed()
@@ -145,22 +141,22 @@ class ClothesSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        images = []
-        for key in self._dir_info.keys():
-            image = _load_image(self.root, self._dir_info[key].name, self._files_list[idx],
-                                self._dir_info[key].extension)
-            image = to_tensor(image)
-            if self.transform:
-                torch.manual_seed(seed)
-                image = self.transform(image)
-            images.append(image)
+        input_ = _load_image(self.root, self._dir_info["image"].name, self._files_list[idx],
+                             self._dir_info["image"].extension)
+        input_ = to_tensor(input_)
 
-        sample = {
-            "image": images[0],
-            "mask": images[1]
-        }
+        target = _load_image(self.root, self._dir_info["mask"].name, self._files_list[idx],
+                             self._dir_info["mask"].extension)
+        target = to_tensor(target)
 
-        return sample
+        if self.transform:
+            torch.manual_seed(seed)
+            input_ = self.transform(input_)
+
+            torch.manual_seed(seed)
+            target = self.transform(target)
+
+        return input_, target
 
     def __len__(self):
         return len(self._files_list)
