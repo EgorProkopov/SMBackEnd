@@ -24,12 +24,12 @@ def test_person_segmentation():
     dataset = PersonSegmentationDataset(test_path, segmentation_type="parse")
     _, target = dataset[0]
     assert target.shape == (1, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {target.shape}"
+        f"Wrong tensor.shape. Expected (1, 1024, 768), got {target.shape}"
 
     dataset = PersonSegmentationDataset(test_path, segmentation_type="parse-agnostic")
     _, target = dataset[0]
     assert target.shape == (1, 1024, 768), \
-        f"Wrong tensor.shape. Expected (3, 1024, 768), got {target.shape}"
+        f"Wrong tensor.shape. Expected (1, 1024, 768), got {target.shape}"
 
 
 def test_cloth_segmentation():
