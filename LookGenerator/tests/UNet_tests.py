@@ -11,4 +11,9 @@ def test_output_shape():
 
     model = UNet()
     output_value = model(input_value)
+    print(output_value.shape)
     assert output_value.shape == (1, 1, 1024, 768)
+
+
+if __name__ == "__main__":
+    test_output_shape()
