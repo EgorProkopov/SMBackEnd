@@ -1,5 +1,12 @@
-from datasets.classes import Dataset
+import torch
+from torch import random
+from torch.utils.data import Dataset
+from torchvision.transforms import ToTensor
 
+import os
+from typing import Tuple
+
+from LookGenerator.datasets.utils import load_image, DirInfo
 
 class PoseNetDataset(Dataset):
     """

@@ -1,6 +1,7 @@
 import os
 
-from LookGenerator.datasets.classes import PersonSegmentationDataset, ClothesSegmentationDataset
+from LookGenerator.datasets.person_segmantation_dataset import PersonSegmentationDataset
+from LookGenerator.datasets.clothes_segmentation_dataset import ClothesSegmentationDataset
 from LookGenerator.config.config import DATASET_DIR
 
 
