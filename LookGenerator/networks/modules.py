@@ -5,7 +5,7 @@ import torch.nn as nn
 class Conv3x3(nn.Module):
     """Convolution module with optional batch_norm, dropout layers and activation function."""
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, bias=True, activation_func=True):
+                 dropout=False, batch_norm=False, activation_func=None, bias=True):
         """
 
         Args:
@@ -14,7 +14,7 @@ class Conv3x3(nn.Module):
             dropout: if 'True', Then adds dropout layer in this module
             batch_norm: if 'True', then adds batch_norm layer in this module
             bias: if 'True', then  adds a bias to the convolutional layer
-            activation_func: if 'True', then adds ReLU activation func in the end of module
+            activation_func: Adds activation func
         """
         super(Conv3x3, self).__init__()
         self.net = self._init_net(in_channels, out_channels,
@@ -29,7 +29,7 @@ class Conv3x3(nn.Module):
             dropout: if 'True', Then adds dropout layer in this module
             batch_norm: if 'True', then adds batch_norm layer in this module
             bias: if 'True', then  adds a bias to the convolutional layer
-            activation_func: if 'True', then adds ReLU activation func in the end of module
+            activation_func: Adds activation function
 
         Returns:
             Module network
@@ -40,7 +40,7 @@ class Conv3x3(nn.Module):
         if batch_norm:
             net_list.append(nn.BatchNorm2d(out_channels))
         if activation_func:
-            net_list.append(nn.ReLU())
+            net_list.append(activation_func)
         net = nn.Sequential(*net_list)
         return net
 
@@ -74,7 +74,7 @@ class Conv5x5(nn.Module):
     Have optional Dropout and BatchNorm layers after every conv layer and optional residual connection.
     """
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, bias=True, res_conn=False):
+                 dropout=False, batch_norm=False, activation_func=None, bias=True, res_conn=False):
         """
         Args:
             in_channels: Number of channels in the input image
@@ -87,10 +87,12 @@ class Conv5x5(nn.Module):
         super(Conv5x5, self).__init__()
         self.skip_conn = res_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+                    activation_func=activation_func, bias=bias),
+            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+                    activation_func=None, bias=bias)
         )
-        self._ReLU = nn.ReLU()
+        self._activation_func = activation_func
 
     def forward(self, x):
         """
@@ -104,8 +106,12 @@ class Conv5x5(nn.Module):
         out = self.net(x)
         if self.skip_conn:
             shortcut = x
-            return self._ReLU(out + shortcut)
-        return self._ReLU(out)
+            out = out + shortcut
+
+        if self._activation_func:
+            return self._activation_func(out)
+        else:
+            return out
 
 
 class Conv7x7(nn.Module):
@@ -113,7 +119,8 @@ class Conv7x7(nn.Module):
     Convolution module that replaces conv layer with kernel_size=7 by 3 conv layers with kernel_size=3.
     Have optional Dropout and BatchNorm layers after every conv layer and optional residual connection.
     """
-    def __init__(self, in_channels, out_channels, dropout=False, batch_norm=False, bias=True, skip_conn=False):
+    def __init__(self, in_channels, out_channels,
+                 dropout=False, batch_norm=False, activation_func=None, bias=True, skip_conn=False):
         """
         Args:
             in_channels: Number of channels in the input image
@@ -126,10 +133,14 @@ class Conv7x7(nn.Module):
         super(Conv7x7, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(in_channels, out_channels, dropout, batch_norm, bias),
-            Conv3x3(out_channels, out_channels, dropout, batch_norm, bias, activation_func=False)
+            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+                    activation_func=activation_func, bias=bias),
+            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+                    activation_func=activation_func, bias=bias),
+            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+                    activation_func=None, bias=bias)
         )
+        self._activation_func = activation_func
 
     def forward(self, x):
         """
@@ -140,9 +151,12 @@ class Conv7x7(nn.Module):
         Returns:
             Result of network working
         """
+        out = self.net(x)
         if self.skip_conn:
             shortcut = x
-            out = self.net(x)
-            return nn.ReLU(out + shortcut)
+            out = out + shortcut
+
+        if self._activation_func:
+            return self._activation_func(out)
         else:
-            return nn.ReLU(self.net(x))
+            return out

@@ -29,16 +29,16 @@ class UNet(nn.Module):
 
         # Encoder
         for feature in features:
-            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True))
+            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, activation_func=nn.ReLU()))
             in_channels = feature
 
         # Decoder
         for feature in reversed(features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
-            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True))
+            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, activation_func=nn.ReLU()))
 
-        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True)
+        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, activation_func=nn.ReLU())
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
     def forward(self, x):
