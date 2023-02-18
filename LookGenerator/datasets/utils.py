@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from PIL import Image
 from dataclasses import dataclass
 
@@ -17,3 +18,8 @@ def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> 
             file_name + extension
         )
     )
+
+
+def convert_channel(image: Image):
+    return np.asarray(image.convert('L')) / 255
+

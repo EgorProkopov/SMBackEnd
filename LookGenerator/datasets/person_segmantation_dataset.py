@@ -7,7 +7,8 @@ from torchvision.transforms import ToTensor
 import os
 from typing import Tuple
 
-from LookGenerator.datasets.utils import load_image
+from LookGenerator.datasets.utils import load_image, convert_channel
+
 
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
@@ -44,21 +45,30 @@ class PersonSegmentationDataset(Dataset):
 
         input_ = load_image(self.root, "image", self._files_list[idx],
                              ".jpg")
-        input_ = to_tensor(input)
+        input_ = to_tensor(input_)
 
         if self.transform_input:
             input_ = self.transform_input(input)
 
-        # TODO: написать загрузку каналов маски
-        target = ... # тут загрузка background'а
-        for _ in _:
-            target_channel = load_image(/// ///)
+        target = torch.empty(0)
+        channel_list = os.listdir(os.path.join(
+                                                self.root,
+                                                "image-densepose-multichannel",
+                                                self._files_list[idx]
+                                                ))
+        channel_files_list = [file.split('.')[0] for file in channel_list]
+
+        for channel in channel_files_list:
+            target_channel = convert_channel( load_image(self.root,
+                                        os.path.join("image-densepose-multichannel", self._files_list[idx]),
+                                        channel,
+                                        ".png") )
             target_channel = to_tensor(target_channel)
 
             if self.transform_mask:
                 target_channel = self.transform_mask(target_channel)
 
-            target = torch.cat((target, target_channel), axis=1)
+            target = torch.cat((target, target_channel), axis=0)
 
         return input_, target
 
