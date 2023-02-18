@@ -6,6 +6,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
+from LookGenerator.networks.utils import save_model
 
 
 class UNet(nn.Module):
@@ -73,7 +74,7 @@ class UNet(nn.Module):
         return self.final_conv(x)
 
 
-def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5):
+def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
     """
     Function for training and validation segmentation model
     Args:
@@ -125,6 +126,8 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         val_loss = val_running_loss/len(val_dataloader)
         val_history.append(val_loss)
         print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
+
+        save_model(model.to('cpu'), path=f"{save_directory}\\unet_epoch_{epoch_num}_{val_loss}.pt")
 
     return train_history, val_history
 
