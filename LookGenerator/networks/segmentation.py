@@ -111,7 +111,8 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
         train_loss = train_running_loss/len(train_dataloader)
         train_history.append(train_history)
-        print(f'Epoch {epoch} of {epoch_num}, train loss: {train_loss:.3f}')
+        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.3f}')
+        torch.cuda.empty_cache()
 
         val_running_loss = 0.0
         for data, targets in val_dataloader:
@@ -120,11 +121,12 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
             outputs = model(data)
             loss = criterion(outputs, targets)
-            val_running_loss = loss.item()
+            val_running_loss += loss.item()
 
         val_loss = val_running_loss/len(val_dataloader)
         val_history.append(val_loss)
-        print(f'Epoch {epoch} of {epoch_num}, val loss: {val_loss:.3f}')
+        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.3f}')
+        torch.cuda.empty_cache()
 
     return train_history, val_history
 
