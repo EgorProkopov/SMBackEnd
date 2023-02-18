@@ -83,7 +83,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         return len(self._files_list)
 
 
-class PersonSegmentationDatasetMultichannel(Dataset):
+class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
     def __init__(self, image_dir: str, transform_input=None, transform_mask=None):
