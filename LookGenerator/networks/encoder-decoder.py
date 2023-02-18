@@ -44,11 +44,57 @@ class EncoderDecoder(nn.Module):
             x: mini-batch of data
 
         Returns:
-            Decoded human and mask of clothes
+            Tensor of packed decoded human and clothes mask.
+            First 3 channels if for decoded human
+            Last channel is for clothes mask, which putted on this human
         """
         skip_connections = []
-        
-        return human_out, clothes_mask_out
+
+        out = self.conv_module1(x)
+        skip_connections.append(out)
+        out = self.max_pool(out)
+
+        out = self.conv_module2(out)
+        skip_connections.append(out)
+        out = self.max_pool(out)
+
+        out = self.conv_module3(out)
+        skip_connections.append(out)
+        out = self.max_pool(out)
+
+        out = self.conv_module4(out)
+        skip_connections.append(out)
+        out = self.max_pool(out)
+
+        out = self.conv_module5(out)
+        skip_connections.append(out)
+        out = self.max_pool(out)
+
+        out = self.bottle_neck(out)
+
+        out = self.deconv_module1(out)
+        out = torch.cat((out, skip_connections[4]), axis=1)
+        out = self.deconv_conv_module1(out)
+
+        out = self.deconv_module2(out)
+        out = torch.cat((out, skip_connections[3]), axis=1)
+        out = self.deconv_conv_module2(out)
+
+        out = self.deconv_module3(out)
+        out = torch.cat((out, skip_connections[2]), axis=1)
+        out = self.deconv_conv_module3(out)
+
+        out = self.deconv_module4(out)
+        out = torch.cat((out, skip_connections[1]), axis=1)
+        out = self.deconv_conv_module4(out)
+
+        out = self.deconv_module5(out)
+        out = torch.cat((out, skip_connections[0]), axis=1)
+        out = self.deconv_conv_module5(out)
+
+        out = self.final_conv(out)
+
+        return out
 
 
 def train_encoder_decoder(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5):
