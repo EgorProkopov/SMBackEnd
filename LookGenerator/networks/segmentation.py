@@ -30,17 +30,18 @@ class UNet(nn.Module):
 
         # Encoder
         for feature in features:
-            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, activation_func=nn.ReLU()))
+            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, activation_func=nn.LeakyReLU()))
             in_channels = feature
 
         # Decoder
         for feature in reversed(features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
-            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, activation_func=nn.ReLU()))
+            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, activation_func=nn.LeakyReLU()))
 
-        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, activation_func=nn.ReLU())
+        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, activation_func=nn.LeakyReLU())
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        self.tanh = nn.Tanh()
 
     def forward(self, x):
         """
@@ -71,7 +72,10 @@ class UNet(nn.Module):
             concat_skip = torch.cat((skip_connection, x), dim=1)
             x = self.ups[i + 1](concat_skip)
 
-        return self.final_conv(x)
+        x = self.final_conv(x)
+        out = self.tanh(x)
+
+        return out
 
 
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
@@ -97,6 +101,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
     for epoch in range(epoch_num):
         model = model.to(device)
+
         train_running_loss = 0.0
         model.train()
         for data, targets in train_dataloader:
