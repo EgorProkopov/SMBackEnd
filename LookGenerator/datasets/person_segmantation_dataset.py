@@ -7,77 +7,65 @@ from torchvision.transforms import ToTensor
 import os
 from typing import Tuple
 
-from LookGenerator.datasets.utils import load_image, DirInfo
+from LookGenerator.datasets.utils import load_image
 
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transform=None, segmentation_type="parse"):
+    def __init__(self, image_dir: str, transform_input=None, transform_mask=None):
         """
-        Parameters:
-            image_dir (str): Directory with all images
-                Directory must contain such subdirectories as:
-                    - image
-                    - image-densepose
-                    - image-parse-agnostic-v3.2
-                    - image parse-v3
-                Names of files at these directories must be equal for data of one sample.
-
-            transform (callable, optional): A transform to be applied on images. Default: None
+        Args:
+            image_dir: Directory with all images
+            transform_input: A transform to be applied on input images. Default: None
+            transform_mask: A transform to be applied on mask of image. Default: None
         """
 
         super().__init__()
 
         self.root = image_dir
-        self.transform = transform
-        self.type = segmentation_type
+        self.transform_input = transform_input
+        self.transform_mask = transform_mask
 
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
-
-        self._dir_info = {
-            "image": DirInfo("image", ".jpg"),
-            "densepose": DirInfo("image-densepose", ".jpg"),
-            "parse-agnostic": DirInfo("image-parse-agnostic-v3.2", ".png"),
-            "parse": DirInfo("image-parse-v3", ".png")
-        }
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             idx: The index of data sample
 
-        Returns:
-            Returns a tuple of torch.Tensor input and target with type:
-                "image": image of person
-                "densepose": image of densepose segmentation
-                "parse_agnostic": image of parse agnostic segmentation
-                "parse": image of parse segmentation
+        Returns: A Pair of X and y objects for segmentation
         """
 
-        seed = random.seed()
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
         to_tensor = ToTensor()
 
-        input_ = load_image(self.root, self._dir_info["image"].name, self._files_list[idx],
-                             self._dir_info["image"].extension)
-        input_ = to_tensor(input_)
+        input_ = load_image(self.root, "image", self._files_list[idx],
+                             ".jpg")
+        input_ = to_tensor(input)
 
-        target = load_image(self.root, self._dir_info[self.type].name, self._files_list[idx],
-                             self._dir_info[self.type].extension)
-        target = to_tensor(target)
+        if self.transform_input:
+            input_ = self.transform_input(input)
 
-        if self.transform:
-            torch.manual_seed(seed)
-            input_ = self.transform(input_)
+        # TODO: написать загрузку каналов маски
+        target = ... # тут загрузка background'а
+        for _ in _:
+            target_channel = load_image(/// ///)
+            target_channel = to_tensor(target_channel)
 
-            torch.manual_seed(seed)
-            target = self.transform(target)
+            if self.transform_mask:
+                target_channel = self.transform_mask(target_channel)
+
+            target = torch.cat((target, target_channel), axis=1)
 
         return input_, target
 
     def __len__(self):
+        """
+        Returns: the length of the dataset
+        """
+
         return len(self._files_list)
 
