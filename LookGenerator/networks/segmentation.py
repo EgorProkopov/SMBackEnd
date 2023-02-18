@@ -99,6 +99,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     val_history = []
 
     criterion = IoULoss()
+    criterion.to(device)
 
     for epoch in range(epoch_num):
         model = model.to(device)
@@ -137,7 +138,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.3f}')
         torch.cuda.empty_cache()
 
-        save_model(model.to('cpu'), path=f"{save_directory}\\unet_epoch_{epoch_num}_{val_loss}.pt")
+        save_model(model.to('cpu'), path=f"{save_directory}\\unet_epoch_{epoch}_{val_loss}.pt")
 
     return train_history, val_history
 
