@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
-from torchmetrics import JaccardIndex
 
+from LookGenerator.networks.losses import IoULoss
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -98,7 +98,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = JaccardIndex(task="multiclass", num_classes=16)
+    criterion = IoULoss()
 
     for epoch in range(epoch_num):
         model = model.to(device)
