@@ -89,7 +89,6 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
     """
     device = torch.device(device)
-    model = model.to(device)
 
     train_history = []
     val_history = []
@@ -97,6 +96,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     criterion = nn.CrossEntropyLoss()
 
     for epoch in range(epoch_num):
+        model = model.to(device)
         train_running_loss = 0.0
         model.train()
         for data, targets in train_dataloader:
@@ -117,7 +117,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         torch.cuda.empty_cache()
 
         val_running_loss = 0.0
-        model.val()
+        model.eval()
         for data, targets in val_dataloader:
             data = data.to(device)
             targets = targets.to(device)
