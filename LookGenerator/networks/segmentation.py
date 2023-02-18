@@ -98,6 +98,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
     for epoch in range(epoch_num):
         train_running_loss = 0.0
+        model.train()
         for data, targets in train_dataloader:
             data = data.to(device)
             targets = targets.to(device)
@@ -116,6 +117,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         torch.cuda.empty_cache()
 
         val_running_loss = 0.0
+        model.val()
         for data, targets in val_dataloader:
             data = data.to(device)
             targets = targets.to(device)
