@@ -42,7 +42,7 @@ class UNet(nn.Module):
 
         self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, activation_func=nn.LeakyReLU())
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
-        self.tanh = nn.Tanh()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         """
@@ -74,7 +74,7 @@ class UNet(nn.Module):
             x = self.ups[i + 1](concat_skip)
 
         x = self.final_conv(x)
-        out = self.tanh(x)
+        out = self.sigmoid(x)
 
         return out
 
