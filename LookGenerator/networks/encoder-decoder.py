@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from LookGenerator.networks.modules import Conv5x5
+from LookGenerator.networks.modules import Conv3x3
 
 
 # TODO: test it
@@ -11,12 +11,31 @@ class EncoderDecoder(nn.Module):
         super(EncoderDecoder, self).__init__()
 
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.leaky_relu = nn.LeakyReLU()
-        self.relu = nn.ReLU()
-        self.tanh = nn.Tanh()
 
-        self.conv1 = Conv5x5(in_channels=in_channels, out_channels=64, )
+        self.conv_module1 = Conv3x3(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU())
+        self.conv_module2 = Conv3x3(in_channels=64, out_channels=128, batch_norm=True, activation_func=nn.LeakyReLU())
+        self.conv_module3 = Conv3x3(in_channels=128, out_channels=256, batch_norm=True, activation_func=nn.LeakyReLU())
+        self.conv_module4 = Conv3x3(in_channels=256, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
+        self.conv_module5 = Conv3x3(in_channels=512, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
 
+        self.bottle_neck = Conv3x3(in_channels=512, out_channels=512, batch_norm=True, activation_func=nn.ReLU())
+
+        self.deconv_module1 = nn.ConvTranspose2d(in_channels=512, out_channels=512, kernel_size=2, stride=2)
+        self.deconv_conv_module1 = Conv3x3(in_channels=512*2, out_channels=512, batch_norm=True, activation_func=nn.ReLU())
+
+        self.deconv_module2 = nn.ConvTranspose2d(in_channels=512, out_channels=512, kernel_size=2, stride=2)
+        self.deconv_conv_module2 = Conv3x3(in_channels=512*2, out_channels=256, batch_norm=True, activation_func=nn.ReLU())
+
+        self.deconv_module3 = nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=2, stride=2)
+        self.deconv_conv_module3 = Conv3x3(in_channels=256*2, out_channels=128, batch_norm=True, activation_func=nn.ReLU())
+
+        self.deconv_module4 = nn.ConvTranspose2d(in_channels=128, out_channels=128, kernel_size=2, stride=2)
+        self.deconv_conv_module4 = Conv3x3(in_channels=128*2, out_channels=64, batch_norm=True, activation_func=nn.ReLU())
+
+        self.deconv_module5 = nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=2, stride=2)
+        self.deconv_conv_module5 = Conv3x3(in_channels=64*2, out_channels=32, batch_norm=True, activation_func=nn.ReLU())
+
+        self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels, batch_norm=True, activation_func=nn.Tanh())
 
     def forward(self, x):
         """
@@ -25,35 +44,10 @@ class EncoderDecoder(nn.Module):
             x: mini-batch of data
 
         Returns:
-            Result of network working
+            Decoded human and mask of clothes
         """
-        pose_pack = x[0]
-        clothes = x[1]
-
-        pose_out = self.pose_encoder(pose_pack)
-        clothes_out = self.clothes_encoder(clothes)
-
-        out = torch.cat((pose_out, clothes_out), dim=1)
-
-        skip_connections = [out]
-
-        for encoder_module in self.encoder_list:
-            out = encoder_module(out)
-            skip_connections.append(out)
-
-        out = self.bottle_neck(out)
-        skip_connections = skip_connections[::-1]
-
-        for decoder_module, skip_connection in zip(self.decoder_list, skip_connections):
-            out = torch.cat((out, skip_connection), dim=1)
-            out = decoder_module(out)
-
-        human_out = out[0:60]
-        clothes_mask_out = out[61:64]
-
-        human_out = self.human_decoder(human_out)
-        clothes_mask_out = self.clothes_mask_decoder(clothes_mask_out)
-
+        skip_connections = []
+        
         return human_out, clothes_mask_out
 
 
