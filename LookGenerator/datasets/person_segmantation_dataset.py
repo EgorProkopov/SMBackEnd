@@ -48,7 +48,7 @@ class PersonSegmentationDataset(Dataset):
         input_ = to_tensor(input_)
 
         if self.transform_input:
-            input_ = self.transform_input(input)
+            input_ = self.transform_input(input_)
 
         target = torch.empty(0)
         channel_list = os.listdir(os.path.join(
