@@ -24,14 +24,20 @@ class IoULoss(nn.Module):
         # comment out if model contains a sigmoid or equivalent activation layer
         # inputs = functional.sigmoid(inputs)
 
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
+        inputs_channel_size = len(inputs.shape[1])
+        targets_channels_size = len(targets.shape[1])
 
-        intersection = (inputs * targets).sum()
-        total = (inputs + targets).sum()
-        union = total - intersection
+        inputs = [inputs[:, i, :, :].view(-1) for i in range(inputs_channel_size)]
+        targets = [targets[:, i, :, :].view(-1) for i in range(targets_channels_size)]
 
-        IoU = (intersection + smooth) / (union + smooth)
+        IoUs = []
+        for input_, target in zip(inputs, targets):
+            intersection = (input_ * target).sum()
+            total = (input_ + target).sum()
+            union = total - intersection
+            IoU = (intersection + smooth) / (union + smooth)
+            IoUs.append(IoU)
 
-        return (1 - IoU) ** 2
+        IoU = sum(IoUs)/len(IoUs)
+        return 1 - IoU
 
