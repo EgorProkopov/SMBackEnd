@@ -38,9 +38,9 @@ class UNet(nn.Module):
         for feature in reversed(features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
-            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU()))
+            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, dropout=False, activation_func=nn.ReLU()))
 
-        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU())
+        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, dropout=False, activation_func=nn.ReLU())
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
         self.sigmoid = nn.Sigmoid()
 
