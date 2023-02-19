@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 
+from LookGenerator.networks.losses import IoULoss
 from LookGenerator.networks.modules import Conv3x3
+from LookGenerator.networks.utils import save_model
 
 
 # TODO: test it
@@ -104,5 +106,73 @@ class EncoderDecoder(nn.Module):
         return out
 
 
-def train_encoder_decoder(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5):
-    pass
+def train_encoder_decoder(
+        model,
+        train_dataloader,
+        val_dataloader,
+        optimizer,
+        device='cpu',
+        epoch_num=5,
+        save_directory=None
+):
+    """
+    Method for training and validation encoder-decoder
+    Args:
+        save_directory:
+        model:
+        train_dataloader:
+        val_dataloader:
+        optimizer:
+        device:
+        epoch_num:
+    """
+
+    device = torch.device(device)
+
+    train_history = []
+    val_history = []
+
+    criterion = IoULoss()
+    criterion.to(device)
+
+    for epoch in range(epoch_num):
+        model = model.to(device)
+
+        train_running_loss = 0.0
+        model.train()
+
+        for data, targets in train_dataloader:
+            data = data.to(device)
+            targets = targets.to(device)
+
+            outputs = model(data)
+
+            optimizer.zero_grad()
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+            train_running_loss += loss.item()
+
+        train_loss = train_running_loss / len(train_dataloader)
+        train_history.append(train_loss)
+        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.3f}')
+        torch.cuda.empty_cache()
+
+        val_running_loss = 0.0
+        model.eval()
+        for data, targets in val_dataloader:
+            data = data.to(device)
+            targets = targets.to(device)
+
+            outputs = model(data)
+            loss = criterion(outputs, targets)
+            val_running_loss += loss.item()
+
+        val_loss = val_running_loss / len(val_dataloader)
+        val_history.append(val_loss)
+        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.3f}')
+        torch.cuda.empty_cache()
+
+        save_model(model.to('cpu'), path=f"{save_directory}\\encoder_decoder_epoch_{epoch}_{val_loss:.3f}.pt")
+
+    return train_history, val_history
