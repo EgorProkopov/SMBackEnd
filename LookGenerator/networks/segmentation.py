@@ -31,16 +31,16 @@ class UNet(nn.Module):
 
         # Encoder
         for feature in features:
-            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, activation_func=nn.LeakyReLU()))
+            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU()))
             in_channels = feature
 
         # Decoder
         for feature in reversed(features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
-            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, activation_func=nn.LeakyReLU()))
+            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU()))
 
-        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, activation_func=nn.LeakyReLU())
+        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU())
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
         self.sigmoid = nn.Sigmoid()
 
@@ -119,7 +119,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             train_running_loss += loss.item()
 
         train_loss = train_running_loss/len(train_dataloader)
-        train_history.append(train_history)
+        train_history.append(train_loss)
         print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.3f}')
         torch.cuda.empty_cache()
 
