@@ -51,15 +51,14 @@ def process_image(net, image, width=192, height=256):
 
     image, scale = _process_input(image)
 
-    to_tensor = ToTensor()
+    with torch.no_grad():
 
-    image = to_tensor(image)
-    heatmap, offsets, displacements_fwd, displacements_bwd = net(image)
-    resize = Resize((height, width))
+        image = torch.Tensor(image).cuda()
 
-    result = (heatmap, offsets, displacements_fwd, displacements_bwd)
-    result = (x.squeeze(0) for x in result)
-    result = (resize.forward(x) for x in result)
+        heatmap, offsets, displacements_fwd, displacements_bwd = net(image)
+        resize = Resize((height, width))
 
-    return result
-    
+        result = (heatmap, offsets, displacements_fwd, displacements_bwd)
+        result = [x.squeeze(0) for x in result]
+        result = tuple([resize(x) for x in result])
+        return result
