@@ -49,8 +49,12 @@ def process_image(net, image, width=192, height=256):
         displacements_bwd:  torch.Tensor, shape=(34, width, height)
     """
 
-    input_image, scale = _process_input(image)
-    heatmap, offsets, displacements_fwd, displacements_bwd = net(input_image)
+    image, scale = _process_input(image)
+
+    to_tensor = ToTensor()
+
+    image = to_tensor(image)
+    heatmap, offsets, displacements_fwd, displacements_bwd = net(image)
     resize = Resize((height, width))
 
     result = (heatmap, offsets, displacements_fwd, displacements_bwd)
