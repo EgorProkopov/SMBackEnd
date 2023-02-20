@@ -32,7 +32,7 @@ def prepare_image_for_model_transpose(image: Image):
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота]
     """
-    return prepare_image_for_model(image).T
+    return torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
 
 
 def prepare_image_for_model(image: Image):
