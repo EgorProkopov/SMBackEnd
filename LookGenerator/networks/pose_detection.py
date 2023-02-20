@@ -31,7 +31,7 @@ def load_posenet():
         Loads posenet model
     """
     path = os.path.join(PROJECT_ROOT, "weights", "posenet.pt")
-    net = torch.load(path)
+    net = torch.jit.load(path)
     return net
 
 
