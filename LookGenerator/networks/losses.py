@@ -29,14 +29,14 @@ class IoULoss(nn.Module):
         inputs = [inputs[:, i, :, :].reshape(-1) for i in range(inputs_channel_size)]
         targets = [targets[:, i, :, :].reshape(-1) for i in range(targets_channels_size)]
 
-        IoUs = []
+        IoULosses = []
         for input_, target in zip(inputs, targets):
             intersection = (input_ * target).sum()
             total = (input_ + target).sum()
             union = total - intersection
             IoU = (intersection + smooth) / (union + smooth)
-            IoUs.append(IoU)
+            IoULosses.append((1 - IoU) ** 2)
 
-        IoU = sum(IoUs)/len(IoUs)
-        return 1 - IoU
+        IoULoss = sum(IoULosses)/len(IoULosses)
+        return IoULoss
 
