@@ -27,22 +27,34 @@ class UNet(nn.Module):
         super(UNet, self).__init__()
         self.ups = nn.ModuleList()
         self.downs = nn.ModuleList()
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=True)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=False)
 
         # Encoder
         for feature in features:
-            self.downs.append(Conv5x5(in_channels, feature, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU()))
+            self.downs.append(Conv5x5(
+                in_channels, feature,
+                batch_norm=True, dropout=False,
+                activation_func=nn.LeakyReLU())
+            )
             in_channels = feature
 
         # Decoder
         for feature in reversed(features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2))
 
-            self.ups.append(Conv5x5(feature*2, feature, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU()))
+            self.ups.append(Conv5x5(
+                feature*2, feature,
+                batch_norm=True, dropout=False,
+                activation_func=nn.ReLU())
+            )
 
-        self.bottleneck = Conv3x3(features[-1], features[-1]*2, batch_norm=True, dropout=False, activation_func=nn.LeakyReLU())
+        self.bottleneck = Conv3x3(
+            features[-1], features[-1]*2,
+            batch_norm=True, dropout=False,
+            activation_func=nn.ReLU()
+        )
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid() - откомментить, если используется самописная функция активации
 
     def forward(self, x):
         """
@@ -98,7 +110,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = IoULoss()
+    criterion = nn.CrossEntropyLoss()
     criterion.to(device)
 
     for epoch in range(epoch_num):
