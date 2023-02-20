@@ -70,7 +70,7 @@ class UNet(nn.Module):
         for down in self.downs:
             x = down(x)
             skip_connections.append(x)
-            x, indices = self.pool(x)
+            x = self.pool(x)
 
         x = self.bottleneck(x)
         skip_connections = skip_connections[::-1]
@@ -85,8 +85,8 @@ class UNet(nn.Module):
             concat_skip = torch.cat((skip_connection, x), dim=1)
             x = self.ups[i + 1](concat_skip)
 
-        x = self.final_conv(x)
-        out = self.sigmoid(x)
+        out = self.final_conv(x)
+        # out = self.sigmoid(out)
 
         return out
 
@@ -110,7 +110,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss() # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
