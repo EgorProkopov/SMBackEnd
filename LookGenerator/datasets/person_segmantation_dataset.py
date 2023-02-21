@@ -73,6 +73,9 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 
             target = torch.cat((target, target_channel), axis=0)
 
+        target = torch.transpose(target, 0, 2)
+        target = torch.transpose(target, 0, 1)
+
         return input_, target
 
     def __len__(self):

@@ -123,6 +123,9 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             targets = targets.to(device)
 
             outputs = model(data)
+
+            outputs = torch.transpose(outputs, 1, 3)
+            outputs = torch.transpose(outputs, 1, 2)
     
             optimizer.zero_grad()
             loss = criterion(outputs, targets)
