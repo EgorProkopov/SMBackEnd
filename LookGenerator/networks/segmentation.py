@@ -124,7 +124,6 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
             outputs = model(data)
 
-
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
     
