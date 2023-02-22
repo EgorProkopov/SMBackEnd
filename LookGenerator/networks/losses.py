@@ -39,24 +39,3 @@ class IoULoss(nn.Module):
 
         IoULoss = sum(IoULosses)/len(IoULosses)
         return IoULoss
-
-
-class SegmentationCELose(nn.Module):
-    def __init__(self, weight=None, size_average=True):
-        super(SegmentationCELose, self).__init__()
-
-    def forward(self, inputs, targets):
-        batch_size = inputs.shape[0]
-
-        CELosses = []
-        for i in range(batch_size):
-            input_ = inputs[i]
-            target = targets[i]
-
-            input_ = torch.reshape(input_, (-1, ))
-            target = torch.reshape(target, (-1, ))
-
-            CELoss = nn.CrossEntropyLoss(input_, target)
-            CELosses.append(CELoss)
-
-        return sum(CELosses) / batch_size
