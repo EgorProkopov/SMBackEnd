@@ -120,11 +120,15 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         for data, targets in train_dataloader:
             data = data.to(device)
             targets = targets.to(device)
+            # targets = targets.reshape(-1, targets.shape[0] * targets.shape[1] * targets.shape[2] * targets.shape[3])
+            targets = torch.reshape(targets, (-1, ))
 
             outputs = model(data)
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
-    
+            #outputs = outputs.reshape(-1, outputs.shape[0] * outputs.shape[1] * outputs.shape[2] * outputs.shape[3])
+            outputs = torch.reshape(outputs, (-1, ))
+
             optimizer.zero_grad()
             loss = criterion(outputs, targets)
             loss.backward()
@@ -141,11 +145,14 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         for data, targets in val_dataloader:
             data = data.to(device)
             targets = targets.to(device)
+            # targets = targets.reshape(-1, targets.shape[0] * targets.shape[1] * targets.shape[2] * targets.shape[3])
+            targets = torch.reshape(targets, (-1, ))
 
             outputs = model(data)
-
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
+            #outputs = outputs.reshape(-1, outputs.shape[0] * outputs.shape[1] * outputs.shape[2] * outputs.shape[3])
+            outputs = torch.reshape(outputs, (-1, ))
 
             loss = criterion(outputs, targets)
             val_running_loss += loss.item()
