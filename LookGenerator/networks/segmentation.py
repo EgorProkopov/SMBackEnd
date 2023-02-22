@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from LookGenerator.networks.losses import IoULoss
+from LookGenerator.networks.losses import IoULoss, SegmentationCELose
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -18,7 +18,6 @@ class UNet(nn.Module):
             self, in_channels=3, out_channels=1, features=(64, 128, 256, 512)
     ):
         """
-
         Args:
             in_channels: Number of channels in the input image
             out_channels: Number of channels in the out mask
@@ -110,7 +109,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = nn.CrossEntropyLoss() # IoULoss
+    criterion = SegmentationCELose()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
@@ -123,7 +122,6 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             targets = targets.to(device)
 
             outputs = model(data)
-
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
     
