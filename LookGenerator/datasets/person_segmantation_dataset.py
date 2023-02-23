@@ -103,7 +103,7 @@ class PersonSegmentationDataset(Dataset):
         self.transform_input = transform_input
         self.transform_mask = transform_mask
 
-        list_of_files = os.listdir(image_dir + r"\image")
+        list_of_files = os.listdir(image_dir + r"\image2")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -119,13 +119,13 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        input_ = load_image(self.root, "image", self._files_list[idx], ".jpg")
+        input_ = load_image(self.root, "image2", self._files_list[idx], ".jpg")
         input_ = to_tensor(input_)
 
         if self.transform_input:
             input_ = self.transform_input(input_)
 
-        target = load_image(self.root, "image-densepose", self._files_list[idx], ".jpg")
+        target = load_image(self.root, "imageOut", self._files_list[idx], ".png")
         target = to_tensor(target)
 
         if self.transform_mask:
