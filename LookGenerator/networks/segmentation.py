@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from LookGenerator.networks.losses import IoULoss
+from LookGenerator.networks.losses import IoULoss, FocalLoss
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -140,7 +140,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = nn.CrossEntropyLoss()  # IoULoss
+    criterion = FocalLoss() # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
@@ -152,13 +152,13 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             data = data.to(device)
             targets = targets.to(device)
             # targets = targets.reshape(-1, targets.shape[0] * targets.shape[1] * targets.shape[2] * targets.shape[3])
-            targets = torch.reshape(targets, (targets.shape[0], -1))
+            #targets = torch.reshape(targets, (targets.shape[0], -1))
 
             outputs = model(data)
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
             #outputs = outputs.reshape(-1, outputs.shape[0] * outputs.shape[1] * outputs.shape[2] * outputs.shape[3])
-            outputs = torch.reshape(outputs, (outputs.shape[0], -1))
+            #outputs = torch.reshape(outputs, (outputs.shape[0], -1))
 
             optimizer.zero_grad()
             loss = criterion(outputs, targets)
@@ -168,7 +168,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
         train_loss = train_running_loss/len(train_dataloader)
         train_history.append(train_loss)
-        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.3f}')
+        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.5f}')
         torch.cuda.empty_cache()
 
         val_running_loss = 0.0
@@ -177,20 +177,20 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             data = data.to(device)
             targets = targets.to(device)
             # targets = targets.reshape(-1, targets.shape[0] * targets.shape[1] * targets.shape[2] * targets.shape[3])
-            targets = torch.reshape(targets, (targets.shape[0], -1))
+            #targets = torch.reshape(targets, (targets.shape[0], -1))
 
             outputs = model(data)
             outputs = torch.transpose(outputs, 1, 3)
             outputs = torch.transpose(outputs, 1, 2)
             #outputs = outputs.reshape(-1, outputs.shape[0] * outputs.shape[1] * outputs.shape[2] * outputs.shape[3])
-            outputs = torch.reshape(outputs, (outputs.shape[0], -1))
+            #outputs = torch.reshape(outputs, (outputs.shape[0], -1))
 
             loss = criterion(outputs, targets)
             val_running_loss += loss.item()
 
         val_loss = val_running_loss/len(val_dataloader)
         val_history.append(val_loss)
-        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.3f}')
+        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.5f}')
         torch.cuda.empty_cache()
 
         save_model(model.to('cpu'), path=f"{save_directory}\\unet_epoch_{epoch}_{val_loss}.pt")
