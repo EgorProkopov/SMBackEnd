@@ -90,6 +90,37 @@ class UNet(nn.Module):
         return out
 
 
+class UNetTrainer:
+    def __init__(self, optimizer, criterion, device='cpu', save_directory=r""):
+        self.optimizer = optimizer,
+        self.criterion = criterion,
+        device = torch.device(device)
+        self.device = device
+        self.save_directory = save_directory
+        self.criterion.to(self.device)
+
+        self.train_history_epochs = []
+        self.val_history_epochs = []
+
+        self.train_history_batches = []
+        self.val_history_batches = []
+
+    def train(self, train_dataloader, val_dataloader, epoch_num=5):
+        pass
+
+    def _train_epoch(self, train_dataloader):
+        pass
+
+    def _val_epoch(self, val_dataloader):
+        pass
+
+    def draw_history_plots(self, ):
+        """
+        Draws plots of train and validation
+        """
+        pass
+
+
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
     """
     Function for training and validation segmentation model
