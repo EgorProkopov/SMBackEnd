@@ -14,6 +14,6 @@ def load_weights():
     for file_dir, file_url in WEIGHTS_FILES_DICT:
         if not os.path.exists(file_dir):
             assert file_dir + " is doesnt exist. \n\tTrying to download:\n"
-            # TODO: download wiegths files
+            # TODO: download wiegths files and add needed assets
         else:
             print(file_dir + " downloaded.")
