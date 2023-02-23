@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import torch
+import torchvision.transforms as transforms
 import numpy as np
 from PIL import Image
 from dataclasses import dataclass
@@ -32,7 +33,10 @@ def prepare_image_for_model_transpose(image: Image):
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота]
     """
-    return torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
+    tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
+    tensor = transforms.Resize((256, 192))(tensor)
+
+    return tensor
 
 
 def prepare_image_for_model(image: Image):
