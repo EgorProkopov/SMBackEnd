@@ -21,7 +21,9 @@ class MinMaxScale(object):
 
         min_tensor = torch.full(image.shape, self.min)
         if self.max - self.min == 0:
-            raise ZeroDivisionError
+            self.max = 1e-10
+            self.min = 0
+           # raise ZeroDivisionError
 
         image = (image - min_tensor) / (self.max - self.min)
         return image
