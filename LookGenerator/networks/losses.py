@@ -1,4 +1,3 @@
-import numpy
 import torch
 import torch.nn as nn
 import torch.nn.functional as functional
@@ -29,17 +28,16 @@ class IoULoss(nn.Module):
         inputs = [inputs[:, i, :, :].reshape(-1) for i in range(inputs_channel_size)]
         targets = [targets[:, i, :, :].reshape(-1) for i in range(targets_channels_size)]
 
-        IoULosses = []
+        io_u_losses = []
         for input_, target in zip(inputs, targets):
             intersection = (input_ * target).sum()
             total = (input_ + target).sum()
             union = total - intersection
-            IoU = (intersection + smooth) / (union + smooth)
-            IoULosses.append((1 - IoU) ** 2)
+            io_u = (intersection + smooth) / (union + smooth)
+            io_u_losses.append((1 - io_u) ** 2)
 
-        IoULoss = sum(IoULosses)/len(IoULosses)
-        return IoULoss
-
+        io_u_loss = sum(io_u_losses)/len(io_u_losses)
+        return io_u_loss
 
 
 ALPHA = 0.8
@@ -59,8 +57,8 @@ class FocalLoss(nn.Module):
         targets = targets.view(-1)
 
         # first compute binary cross-entropy
-        BCE = functional.binary_cross_entropy(inputs, targets, reduction='mean')
-        BCE_EXP = torch.exp(-BCE)
-        focal_loss = alpha * (1 - BCE_EXP) ** gamma * BCE
+        everyone = functional.binary_cross_entropy(inputs, targets, reduction='mean')
+        all_exp = torch.exp(-everyone)
+        focal_loss = alpha * (1 - all_exp) ** gamma * everyone
 
         return focal_loss
