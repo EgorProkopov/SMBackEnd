@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -130,6 +129,7 @@ class Conv7x7(nn.Module):
             bias: if 'True', then  adds a bias to the convolutional layers
             res_conn: if 'True', then adds residual connection through layers in this module
         """
+        # res_conn == skip_conn ?
         super(Conv7x7, self).__init__()
         self.skip_conn = skip_conn
         self.net = nn.Sequential(
