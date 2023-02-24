@@ -1,12 +1,9 @@
-
 import torch
-from torch import random
+import os
+
+from typing import Tuple
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-
-import os
-from typing import Tuple
-
 from LookGenerator.datasets.utils import load_image, convert_channel
 
 
@@ -47,7 +44,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         to_tensor = ToTensor()
 
         input_ = load_image(self.root, "image", self._files_list[idx],
-                             ".jpg")
+                            ".jpg")
         input_ = to_tensor(input_)
 
         if self.transform_input:
@@ -62,10 +59,10 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         channel_files_list = [file.split('.')[0] for file in channel_list]
 
         for channel in channel_files_list:
-            target_channel = convert_channel( load_image(self.root,
-                                        os.path.join("image-densepose-multichannel", self._files_list[idx]),
-                                        channel,
-                                        ".png") )
+            target_channel = convert_channel(load_image(self.root,
+                                             os.path.join("image-densepose-multichannel", self._files_list[idx]),
+                                             channel,
+                                             ".png"))
             target_channel = to_tensor(target_channel)
 
             if self.transform_mask:
