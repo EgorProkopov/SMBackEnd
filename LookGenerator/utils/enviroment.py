@@ -16,6 +16,9 @@ def load_weights() -> bool:
     for file_dir, file_url in Config.WEIGHTS_FILES_DICT.items():
         if not os.path.exists(os.path.join(Config.PROJECT_ROOT, Config.WEIGHTS_DIR, file_dir)):
             assert file_dir + " is doesnt exist. \n\tTrying to download:\n"
-            gdown.download(url=file_url, output=Config.WEIGHTS_DIR, fuzzy=True)
+            gdown.download(url=file_url,
+                           output=os.path.join(Config.WEIGHTS_DIR, file_dir),
+                           fuzzy=True)
+            print("File {} has been downloaded.".format(file_dir))
         else:
-            print(file_dir + " file has already downloaded.")
+            print("{} file has already downloaded.".format(file_dir))

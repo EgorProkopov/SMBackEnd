@@ -18,7 +18,6 @@ class WeightsConfig:
     WEIGHTS_DIR: str
     POSENET_URL: str
 
-
     """
     Map environment variables to class fields according to these rules:
       - Field won't be parsed unless it has a type annotation
