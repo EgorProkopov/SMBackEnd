@@ -1,10 +1,9 @@
 import os
 import numpy as np
-
 import cv2
 import torch
-from torchvision.transforms import ToTensor, Resize
 
+from torchvision.transforms import Resize
 from LookGenerator.config.config import PROJECT_ROOT
 
 
