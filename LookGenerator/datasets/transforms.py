@@ -1,8 +1,4 @@
-import numpy as np
-
 import torch
-import torch.nn as nn
-from torchvision import transforms
 
 
 class MinMaxScale(object):
@@ -23,7 +19,7 @@ class MinMaxScale(object):
         if self.max - self.min == 0:
             self.max = 1e-10
             self.min = 0
-           # raise ZeroDivisionError
+            # raise ZeroDivisionError
 
         image = (image - min_tensor) / (self.max - self.min)
         return image
@@ -44,4 +40,3 @@ class ThresholdTransform(object):
             image: image to be transformed
         """
         return (image >= self.threshold).float()
-
