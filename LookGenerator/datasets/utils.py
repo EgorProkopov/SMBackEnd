@@ -34,7 +34,7 @@ def prepare_image_for_model_transpose(image: Image):
     Выдает тензор [новое измерение, количество каналов, ширина, высота]
     """
     tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
-    tensor = transforms.Resize((256, 192))(tensor)
+    tensor = transforms.Resize((192, 256))(tensor)
 
     return tensor
 
