@@ -1,10 +1,8 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
 
 from PIL import Image
 from pathlib import Path
-import torchvision.transforms as transforms
-
 from LookGenerator.networks.encoder_decoder import EncoderDecoder
 
 
