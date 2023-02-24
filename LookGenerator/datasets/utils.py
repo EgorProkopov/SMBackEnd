@@ -1,9 +1,9 @@
 import os
-
 import matplotlib.pyplot as plt
 import torch
 import torchvision.transforms as transforms
 import numpy as np
+
 from PIL import Image
 from dataclasses import dataclass
 
@@ -71,7 +71,7 @@ def show_array_multichannel(array):
 
     """
     На вход подается массив numpy [ВЫСОТА, ШИРИНА, КАНАЛЫ]
-    каналов 16!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!, иначе пользоваться предыдущим методов для каждого канала отдельно
+    каналов 16!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!, иначе пользоваться предыдущим методов для каждого канала отдельно
 
     Вспомогательная функция, которая была использована для показа 16 канальных изображений
     """
