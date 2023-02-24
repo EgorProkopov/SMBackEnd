@@ -54,12 +54,14 @@ def to_array_from_model_transpose(tensor):
     """
     return tensor.detach().numpy()[0, :, :, :].T
 
+
 def to_array_from_model_bin_transpose(tensor):
     """
     На вход подается тензор из модели [измерение, количество каналов, ширина, высота]
     На выход получается массив numpy [высота, ширина, количество каналов]
     """
     return tensor.detach().numpy()[0, 0, :, :].T
+
 
 def show_array_as_image(array: np.array):
     return plt.imshow(array)
