@@ -37,7 +37,10 @@ class WeightsConfig:
             # Cast env var value to expected type and raise AppConfigError on failure
             try:
                 var_type = get_type_hints(WeightsConfig)[field]
-                value = var_type(env.get(field, default_value))
+                if var_type == bool:
+                    value = _parse_bool(env.get(field, default_value))
+                else:
+                    value = var_type(env.get(field, default_value))
 
                 self.__setattr__(field, value)
             except ValueError:
