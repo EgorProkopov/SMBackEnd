@@ -75,8 +75,8 @@ class UNet(nn.Module):
             x = self.ups[i](x)
             skip_connection = skip_connections[i // 2]
 
-            if x.shape != skip_connection.shape:
-                x = transforms.functional.resize(x, size=skip_connection.shape[2:])
+            # if x.shape != skip_connection.shape:
+            #     x = transforms.functional.resize(x, size=skip_connection.shape[2:])
 
             concat_skip = torch.cat((skip_connection, x), dim=1)
             x = self.ups[i + 1](concat_skip)
@@ -88,7 +88,11 @@ class UNet(nn.Module):
 
 
 class UNetTrainer:
-    def __init__(self, optimizer, criterion, device='cpu', save_directory=r""):
+    """
+    Class for UNet training
+    """
+    def __init__(self, model, optimizer, criterion, device='cpu', save_directory=r""):
+        self.model = model
         self.optimizer = optimizer,
         self.criterion = criterion,
         device = torch.device(device)
@@ -103,13 +107,77 @@ class UNetTrainer:
         self.val_history_batches = []
 
     def train(self, train_dataloader, val_dataloader, epoch_num=5):
-        pass
+        """
+        Train function for UNet
+        Args:
+            train_dataloader: dataloader for training
+            val_dataloader: dataloader for validation
+            epoch_num: number of epoch for training and validation
+        """
+        for epoch in range(epoch_num):
+            self._train_epoch(train_dataloader, epoch, epoch_num)
+            self._val_epoch(val_dataloader, epoch, epoch_num)
+            save_model(model.to('cpu'),
+                       path=f"{self.save_directory}\\unet_epoch_{self._epoch_string(epoch, epoch_num)}.pt")
 
-    def _train_epoch(self, train_dataloader):
-        pass
+    def _train_epoch(self, train_dataloader, epoch: int, epoch_num: int):
+        self.model = self.model.to(self.device)
 
-    def _val_epoch(self, val_dataloader):
-        pass
+        train_running_loss = 0.0
+        model.train()
+        for data, targets in train_dataloader:
+            data = data.to(self.device)
+            targets = targets.to(self.device)
+            outputs = self.model(data)
+
+            self.optimizer.zero_grad()
+            loss = self.criterion(outputs, targets)
+            loss.backward()
+            self.optimizer.step()
+
+            loss_number = loss.item()
+            train_running_loss += loss_number
+            self.train_history_batches.append(loss_number)
+
+        train_loss = train_running_loss / len(train_dataloader)
+        self.train_history_epochs.append(train_loss)
+        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.5f}')
+        torch.cuda.empty_cache()
+
+    def _epoch_string(self, epoch, epoch_num):
+        num_digits_epoch_num = self._get_num_digits(epoch_num)
+        num_digits_epoch = self._get_num_digits(epoch)
+
+        epoch_string = "0"*(num_digits_epoch_num - num_digits_epoch) + str(epoch)
+        return epoch_string
+
+    # TODO: перенести в utils
+    @staticmethod
+    def _get_num_digits(a):
+        num = 0
+        while a > 0:
+            num += 1
+            a = a // 10
+
+        return a
+
+    def _val_epoch(self, val_dataloader, epoch: int, epoch_num: int):
+        val_running_loss = 0.0
+        model.eval()
+        for data, targets in val_dataloader:
+            data = data.to(self.device)
+            targets = targets.to(self.device)
+            outputs = model(data)
+
+            loss = self.criterion(outputs, targets)
+            loss_number = loss.item()
+            val_running_loss += loss_number
+            self.val_history_batches.append(loss_number)
+
+        val_loss = val_running_loss / len(val_dataloader)
+        self.val_history_epochs.append(val_loss)
+        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.5f}')
+        torch.cuda.empty_cache()
 
     def draw_history_plots(self, ):
         """
@@ -120,6 +188,8 @@ class UNetTrainer:
 
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
     """
+    DEPRECATED
+
     Function for training and validation segmentation model
     Args:
         model: segmentation model for training
@@ -131,13 +201,14 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         save_directory: path out for save model weights
     Returns:
 
+    DEPRECATED
     """
     device = torch.device(device)
 
     train_history = []
     val_history = []
 
-    criterion = FocalLoss() # nn.CrossEntropyLoss()  # IoULoss
+    criterion = FocalLoss()  # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
