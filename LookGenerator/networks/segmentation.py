@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+from tqdm import tqdm
 
 from LookGenerator.networks.losses import FocalLoss
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
@@ -96,8 +97,8 @@ class UNetTrainer:
     """
     def __init__(self, model, optimizer, criterion, device='cpu', save_directory=r""):
         self.model = model
-        self.optimizer = optimizer,
-        self.criterion = criterion,
+        self.optimizer = optimizer
+        self.criterion = criterion
         device = torch.device(device)
         self.device = device
         self.save_directory = save_directory
@@ -127,8 +128,8 @@ class UNetTrainer:
         self.model = self.model.to(self.device)
 
         train_running_loss = 0.0
-        model.train()
-        for data, targets in train_dataloader:
+        self.model.train()
+        for data, targets in tqdm(train_dataloader):
             data = data.to(self.device)
             targets = targets.to(self.device)
             outputs = self.model(data)
@@ -167,7 +168,7 @@ class UNetTrainer:
     def _val_epoch(self, val_dataloader, epoch: int, epoch_num: int):
         val_running_loss = 0.0
         model.eval()
-        for data, targets in val_dataloader:
+        for data, targets in tqdm(val_dataloader):
             data = data.to(self.device)
             targets = targets.to(self.device)
             outputs = model(data)
