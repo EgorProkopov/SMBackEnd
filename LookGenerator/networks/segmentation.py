@@ -49,7 +49,10 @@ class UNet(nn.Module):
             batch_norm=True, dropout=False,
             activation_func=nn.ReLU()
         )
-        self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        self.classifier = nn.Sequential(
+            Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
+            nn.Conv2d(features[0], out_channels, kernel_size=1)
+        )
         # self.sigmoid = nn.Sigmoid() - откомментить, если используется самописная функция активации
 
     def forward(self, x):
@@ -81,7 +84,7 @@ class UNet(nn.Module):
             concat_skip = torch.cat((skip_connection, x), dim=1)
             x = self.ups[i + 1](concat_skip)
 
-        out = self.final_conv(x)
+        out = self.classifier(x)
         # out = self.sigmoid(out)
 
         return out
