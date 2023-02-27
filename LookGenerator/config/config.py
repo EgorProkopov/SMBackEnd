@@ -2,7 +2,7 @@ import os
 from typing import get_type_hints, Union
 from dotenv import load_dotenv
 
-load_dotenv(r'C:\Users\zanoo\PycharmProjects\SMBackEnd\config.env')
+load_dotenv('../config.env')
 
 
 class AppConfigError(Exception):
