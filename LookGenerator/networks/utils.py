@@ -10,7 +10,7 @@ def load_model(model, path: str):
     return model
 
 
-def _get_num_digits(a):
+def get_num_digits(a):
     num = 0
     while a > 0:
         num += 1
