@@ -1,8 +1,9 @@
 import os
-
 import matplotlib.pyplot as plt
 import torch
+import torchvision.transforms as transforms
 import numpy as np
+
 from PIL import Image
 from dataclasses import dataclass
 
@@ -32,7 +33,10 @@ def prepare_image_for_model_transpose(image: Image):
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота]
     """
-    return torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
+    tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
+    tensor = transforms.Resize((192, 256))(tensor)
+
+    return tensor
 
 
 def prepare_image_for_model(image: Image):
@@ -51,6 +55,14 @@ def to_array_from_model_transpose(tensor):
     return tensor.detach().numpy()[0, :, :, :].T
 
 
+def to_array_from_model_bin_transpose(tensor):
+    """
+    На вход подается тензор из модели [измерение, количество каналов, ширина, высота]
+    На выход получается массив numpy [высота, ширина, количество каналов]
+    """
+    return tensor.detach().numpy()[0, 0, :, :].T
+
+
 def show_array_as_image(array: np.array):
     return plt.imshow(array)
 
@@ -59,7 +71,7 @@ def show_array_multichannel(array):
 
     """
     На вход подается массив numpy [ВЫСОТА, ШИРИНА, КАНАЛЫ]
-    каналов 16!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!, иначе пользоваться предыдущим методов для каждого канала отдельно
+    каналов 16!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!, иначе пользоваться предыдущим методов для каждого канала отдельно
 
     Вспомогательная функция, которая была использована для показа 16 канальных изображений
     """

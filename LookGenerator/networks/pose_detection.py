@@ -1,10 +1,9 @@
 import os
 import numpy as np
-
 import cv2
 import torch
-from torchvision.transforms import ToTensor, Resize
 
+from torchvision.transforms import Resize
 from LookGenerator.config.config import PROJECT_ROOT
 
 
@@ -49,13 +48,16 @@ def process_image(net, image, width=192, height=256):
         displacements_bwd:  torch.Tensor, shape=(34, width, height)
     """
 
-    input_image, scale = _process_input(image)
-    heatmap, offsets, displacements_fwd, displacements_bwd = net(input_image)
-    resize = Resize((height, width))
+    image, scale = _process_input(image)
 
-    result = (heatmap, offsets, displacements_fwd, displacements_bwd)
-    result = (x.squeeze(0) for x in result)
-    result = (resize.forward(x) for x in result)
+    with torch.no_grad():
 
-    return result
-    
+        image = torch.Tensor(image).cuda()
+
+        heatmap, offsets, displacements_fwd, displacements_bwd = net(image)
+        resize = Resize((height, width))
+
+        result = (heatmap, offsets, displacements_fwd, displacements_bwd)
+        result = [x.squeeze(0) for x in result]
+        result = tuple([resize(x) for x in result])
+        return result

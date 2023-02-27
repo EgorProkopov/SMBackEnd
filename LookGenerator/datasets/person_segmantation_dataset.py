@@ -1,12 +1,9 @@
-
 import torch
-from torch import random
+import os
+
+from typing import Tuple
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-
-import os
-from typing import Tuple
-
 from LookGenerator.datasets.utils import load_image, convert_channel
 
 
@@ -47,7 +44,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         to_tensor = ToTensor()
 
         input_ = load_image(self.root, "image", self._files_list[idx],
-                             ".jpg")
+                            ".jpg")
         input_ = to_tensor(input_)
 
         if self.transform_input:
@@ -62,16 +59,19 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         channel_files_list = [file.split('.')[0] for file in channel_list]
 
         for channel in channel_files_list:
-            target_channel = convert_channel( load_image(self.root,
-                                        os.path.join("image-densepose-multichannel", self._files_list[idx]),
-                                        channel,
-                                        ".png") )
+            target_channel = convert_channel(load_image(self.root,
+                                             os.path.join("image-densepose-multichannel", self._files_list[idx]),
+                                             channel,
+                                             ".png"))
             target_channel = to_tensor(target_channel)
 
             if self.transform_mask:
                 target_channel = self.transform_mask(target_channel)
 
             target = torch.cat((target, target_channel), axis=0)
+
+        target = torch.transpose(target, 0, 2)
+        target = torch.transpose(target, 0, 1)
 
         return input_, target
 
@@ -100,7 +100,7 @@ class PersonSegmentationDataset(Dataset):
         self.transform_input = transform_input
         self.transform_mask = transform_mask
 
-        list_of_files = os.listdir(image_dir + r"\image")
+        list_of_files = os.listdir(image_dir + r"\image2")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -116,13 +116,13 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        input_ = load_image(self.root, "image", self._files_list[idx], ".jpg")
+        input_ = load_image(self.root, "image2", self._files_list[idx], ".jpg")
         input_ = to_tensor(input_)
 
         if self.transform_input:
             input_ = self.transform_input(input_)
 
-        target = load_image(self.root, "image-densepose", self._files_list[idx], ".jpg")
+        target = load_image(self.root, "imageOut", self._files_list[idx], ".png")
         target = to_tensor(target)
 
         if self.transform_mask:

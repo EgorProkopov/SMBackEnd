@@ -1,11 +1,10 @@
 import torch
+import os
+
 from torch import random
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-
-import os
 from typing import Tuple
-
 from LookGenerator.datasets.utils import load_image, DirInfo
 
 
@@ -54,11 +53,11 @@ class ClothesSegmentationDataset(Dataset):
         to_tensor = ToTensor()
 
         input_ = load_image(self.root, self._dir_info["image"].name, self._files_list[idx],
-                             self._dir_info["image"].extension)
+                            self._dir_info["image"].extension)
         input_ = to_tensor(input_)
 
         target = load_image(self.root, self._dir_info["mask"].name, self._files_list[idx],
-                             self._dir_info["mask"].extension)
+                            self._dir_info["mask"].extension)
         target = to_tensor(target)
 
         if self.transform:

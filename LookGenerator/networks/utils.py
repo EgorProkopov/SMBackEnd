@@ -1,6 +1,3 @@
-import os
-import numpy as np
-
 import torch
 
 
@@ -11,3 +8,11 @@ def save_model(model, path: str):
 def load_model(model, path: str):
     model.load_state_dict(torch.load(path))
     return model
+
+
+def get_num_digits(a):
+    num = 0
+    while a > 0:
+        num += 1
+        a = a // 10
+    return a

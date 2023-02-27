@@ -1,11 +1,9 @@
 import os
-from typing import Tuple
-
 import torch
 import torchvision.transforms as transforms
-from torch import random
-from torch.utils.data import Dataset
 
+from typing import Tuple
+from torch.utils.data import Dataset
 from LookGenerator.datasets.utils import load_image
 
 

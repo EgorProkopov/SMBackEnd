@@ -1,4 +1,3 @@
-import numpy
 import torch
 import torch.nn as nn
 import torch.nn.functional as functional
@@ -29,14 +28,37 @@ class IoULoss(nn.Module):
         inputs = [inputs[:, i, :, :].reshape(-1) for i in range(inputs_channel_size)]
         targets = [targets[:, i, :, :].reshape(-1) for i in range(targets_channels_size)]
 
-        IoUs = []
+        io_u_losses = []
         for input_, target in zip(inputs, targets):
             intersection = (input_ * target).sum()
             total = (input_ + target).sum()
             union = total - intersection
-            IoU = (intersection + smooth) / (union + smooth)
-            IoUs.append(IoU)
+            io_u = (intersection + smooth) / (union + smooth)
+            io_u_losses.append((1 - io_u) ** 2)
 
-        IoU = sum(IoUs)/len(IoUs)
-        return 1 - IoU
+        io_u_loss = sum(io_u_losses)/len(io_u_losses)
+        return io_u_loss
 
+
+ALPHA = 0.8
+GAMMA = 2
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(FocalLoss, self).__init__()
+
+    def forward(self, inputs, targets, alpha=ALPHA, gamma=GAMMA, smooth=1):
+        # comment out if your model contains a sigmoid or equivalent activation layer
+        inputs = torch.sigmoid(inputs)
+
+        # flatten label and prediction tensors
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+
+        # first compute binary cross-entropy
+        everyone = functional.binary_cross_entropy(inputs, targets, reduction='mean')
+        all_exp = torch.exp(-everyone)
+        focal_loss = alpha * (1 - all_exp) ** gamma * everyone
+
+        return focal_loss
