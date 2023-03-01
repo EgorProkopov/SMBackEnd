@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from LookGenerator.networks.losses import FocalLoss
+from LookGenerator.networks.losses import FocalLoss, IoULoss
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -50,10 +50,10 @@ class UNet(nn.Module):
             activation_func=nn.ReLU()
         )
         self.classifier = nn.Sequential(
-            Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
+            # Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
             nn.Conv2d(features[0], out_channels, kernel_size=1)
         )
-        # self.sigmoid = nn.Sigmoid() - откомментить, если используется самописная функция активации
+        self.sigmoid = nn.Sigmoid()  # - откомментить, если используется самописная функция активации
 
     def forward(self, x):
         """
@@ -85,7 +85,7 @@ class UNet(nn.Module):
             x = self.ups[i + 1](concat_skip)
 
         out = self.classifier(x)
-        # out = self.sigmoid(out)
+        out = self.sigmoid(out)
 
         return out
 
@@ -224,8 +224,8 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             targets = targets.to(device)
 
             outputs = model(data)
-            outputs = torch.transpose(outputs, 1, 3)
-            outputs = torch.transpose(outputs, 1, 2)
+            # outputs = torch.transpose(outputs, 1, 3)
+            # outputs = torch.transpose(outputs, 1, 2)
 
             optimizer.zero_grad()
             loss = criterion(outputs, targets)
@@ -245,8 +245,8 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
             targets = targets.to(device)
 
             outputs = model(data)
-            outputs = torch.transpose(outputs, 1, 3)
-            outputs = torch.transpose(outputs, 1, 2)
+            # outputs = torch.transpose(outputs, 1, 3)
+            # outputs = torch.transpose(outputs, 1, 2)
 
             loss = criterion(outputs, targets)
             val_running_loss += loss.item()
