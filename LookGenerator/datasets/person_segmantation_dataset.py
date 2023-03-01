@@ -87,19 +87,19 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transforms_ = None):
+    def __init__(self, image_dir: str, transforms= None):
         """
         Args:
             image_dir: Directory with all images
-            transforms_: transforms from albumentations to be used on image and mask
+            transforms: transforms from albumentations to be used on image and mask
         """
 
         super().__init__()
 
         self.root = image_dir
-        self.transforms_ = transforms_
+        self.transforms = transforms
 
-        list_of_files = os.listdir(image_dir + r"\image2")
+        list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -115,12 +115,11 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        input_ = np.array(load_image(self.root, "image2", self._files_list[idx], ".jpg"))
-        target = np.array(load_image(self.root, "imageOut", self._files_list[idx], ".png"))
-        input_ = to_tensor(input_)
+        input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
+        target = np.array(load_image(self.root, "mask", self._files_list[idx], ".png"))
 
-        if self.transforms_:
-            transformed = self.transforms_(image=input_, mask=target)
+        if self.transforms:
+            transformed = self.transforms(image=input_, mask=target)
             input_ = transformed['image']
             target = transformed['mask']
 
