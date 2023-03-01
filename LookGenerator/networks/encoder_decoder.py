@@ -6,10 +6,9 @@ from LookGenerator.networks.modules import Conv3x3
 from LookGenerator.networks.utils import save_model
 
 
-# TODO: test it
 class EncoderDecoder(nn.Module):
     """Model of encoder-decoder part of virtual try-on model"""
-    def __init__(self, in_channels=22, out_channels=4):
+    def __init__(self, in_channels=22, out_channels=3):
         super(EncoderDecoder, self).__init__()
 
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -54,8 +53,7 @@ class EncoderDecoder(nn.Module):
 
         Returns:
             Tensor of packed decoded human and clothes mask.
-            First 3 channels if for decoded human
-            Last channel is for clothes mask, which putted on this human
+            First 3 channels for decoded human
         """
         skip_connections = []
 
@@ -116,6 +114,8 @@ def train_encoder_decoder(
         save_directory=None
 ):
     """
+    DEPRECATED
+
     Method for training and validation encoder-decoder
     Args:
         save_directory:
@@ -125,6 +125,8 @@ def train_encoder_decoder(
         optimizer:
         device:
         epoch_num:
+
+    DEPRECATED
     """
 
     device = torch.device(device)

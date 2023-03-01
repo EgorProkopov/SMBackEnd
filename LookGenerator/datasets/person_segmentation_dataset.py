@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import os
 
 from typing import Tuple
@@ -86,21 +87,20 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transform_input=None, transform_mask=None):
+    def __init__(self, image_dir: str, transform_image = None, transform_mask = None):
         """
         Args:
             image_dir: Directory with all images
-            transform_input: A transform to be applied on input images. Default: None
-            transform_mask: A transform to be applied on mask of image. Default: None
+            transforms: transforms from albumentations to be used on image and mask
         """
 
         super().__init__()
 
         self.root = image_dir
-        self.transform_input = transform_input
+        self.transform_image = transform_image
         self.transform_mask = transform_mask
 
-        list_of_files = os.listdir(image_dir + r"\image2")
+        list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -116,17 +116,19 @@ class PersonSegmentationDataset(Dataset):
 
         to_tensor = ToTensor()
 
-        input_ = load_image(self.root, "image2", self._files_list[idx], ".jpg")
-        input_ = to_tensor(input_)
+        input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
+        target = np.array(load_image(self.root, "mask", self._files_list[idx], ".png"))
 
-        if self.transform_input:
-            input_ = self.transform_input(input_)
-
-        target = load_image(self.root, "imageOut", self._files_list[idx], ".png")
-        target = to_tensor(target)
+        if self.transform_image:
+            transformed = self.transforms(image=input_)
+            input_ = transformed['image']
 
         if self.transform_mask:
-            target = self.transform_mask(target)
+            transformed = self.transforms(mask=input_)
+            target = transformed['mask']
+
+        input_ = to_tensor(input_)
+        target = to_tensor(target)
 
         return input_, target
 
