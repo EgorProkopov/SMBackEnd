@@ -31,7 +31,8 @@ def convert_channel(image: Image):
 def prepare_image_for_model(image: Image, transform= None):
     """
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
-    Выдает тензор [новое измерение, количество каналов, ширина, высота]
+    Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
+    (при наличии оных)
     """
     tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
     tensor = transform(tensor)
