@@ -115,7 +115,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = FocalLoss()  # nn.CrossEntropyLoss()  # IoULoss
+    criterion = nn.BCELoss()  # FocalLoss()  # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
@@ -123,7 +123,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
         train_running_loss = 0.0
         model.train()
-        for data, targets in train_dataloader:
+        for data, targets in tqdm(train_dataloader):
             data = data.to(device)
             targets = targets.to(device)
 
@@ -144,7 +144,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
 
         val_running_loss = 0.0
         model.eval()
-        for data, targets in val_dataloader:
+        for data, targets in tqdm(val_dataloader):
             data = data.to(device)
             targets = targets.to(device)
 
