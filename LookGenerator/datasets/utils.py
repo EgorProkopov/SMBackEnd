@@ -34,7 +34,8 @@ def prepare_image_for_model(image: Image, transform= None):
     Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
     (при наличии оных)
     """
-    tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
+    tensor = torch.tensor(np.asarray(image, dtype=np.float32).T[np.newaxis, ...])
+    tensor = torch.transpose(tensor, 3, 2)
     tensor = transform(tensor)
 
     return tensor
@@ -48,12 +49,12 @@ def to_array_from_model_transpose(tensor):
     return tensor.detach().numpy()[0, :, :, :].T
 
 
-def to_array_from_model_bin_transpose(tensor):
+def to_array_from_model_bin(tensor):
     """
     На вход подается тензор из модели [измерение, количество каналов, ширина, высота]
     На выход получается массив numpy [высота, ширина, количество каналов]
     """
-    return tensor.detach().numpy()[0, 0, :, :].T
+    return tensor.detach().numpy()[0, 0, :, :]
 
 
 def show_array_as_image(array: np.array):
