@@ -87,7 +87,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 class PersonSegmentationDataset(Dataset):
     """Dataset for a Person Segmentation task"""
 
-    def __init__(self, image_dir: str, transforms= None):
+    def __init__(self, image_dir: str, transform_image = None, transform_mask = None):
         """
         Args:
             image_dir: Directory with all images
@@ -97,7 +97,8 @@ class PersonSegmentationDataset(Dataset):
         super().__init__()
 
         self.root = image_dir
-        self.transforms = transforms
+        self.transform_image = transform_image
+        self.transform_mask = transform_mask
 
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
@@ -118,9 +119,12 @@ class PersonSegmentationDataset(Dataset):
         input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
         target = np.array(load_image(self.root, "mask", self._files_list[idx], ".png"))
 
-        if self.transforms:
-            transformed = self.transforms(image=input_, mask=target)
+        if self.transform_image:
+            transformed = self.transforms(image=input_)
             input_ = transformed['image']
+
+        if self.transform_mask:
+            transformed = self.transforms(mask=input_)
             target = transformed['mask']
 
         input_ = to_tensor(input_)
