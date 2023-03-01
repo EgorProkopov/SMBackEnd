@@ -6,7 +6,7 @@ import numpy as np
 
 from PIL import Image
 from dataclasses import dataclass
-
+import cv2
 
 @dataclass
 class DirInfo:
@@ -15,13 +15,16 @@ class DirInfo:
 
 
 def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
-    return Image.open(
-        os.path.join(
-            root_dir,
-            dir_name,
-            file_name + extension
-        )
-    )
+    # print(root_dir + dir_name + file_name + extension)
+    # input()
+    # return cv2.imread(root_dir + dir_name + file_name + extension, cv2.IMREAD_COLOR)
+    return Image.open(root_dir + dir_name + file_name + extension)
+    #     os.path.join(
+    #         root_dir,
+    #         dir_name,
+    #         file_name + extension
+    #     )
+    # )
 
 
 def convert_channel(image: Image):
