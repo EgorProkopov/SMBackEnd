@@ -28,23 +28,15 @@ def convert_channel(image: Image):
     return np.asarray(image.convert('L')) / 255
 
 
-def prepare_image_for_model_transpose(image: Image):
+def prepare_image_for_model(image: Image, transform= None):
     """
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота]
     """
     tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
-    tensor = transforms.Resize((192, 256))(tensor)
+    tensor = transform(tensor)
 
     return tensor
-
-
-def prepare_image_for_model(image: Image):
-    """
-    На вход подается трехканальная картинка (количество каналов, ширина, высота)
-    На выход подается трехканальная картинка (новое измерение, количество каналов, ширина, высота)
-    """
-    return torch.tensor(np.asarray(image, dtype=np.float32)[np.newaxis, ...])
 
 
 def to_array_from_model_transpose(tensor):
