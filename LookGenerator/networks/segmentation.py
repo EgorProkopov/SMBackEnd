@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from LookGenerator.networks.losses import FocalLoss
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
-from LookGenerator.networks.utils import save_model, _get_num_digits
+from LookGenerator.networks.utils import save_model
 
 
 class UNet(nn.Module):
