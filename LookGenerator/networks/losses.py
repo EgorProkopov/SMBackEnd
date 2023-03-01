@@ -21,23 +21,30 @@ class IoULoss(nn.Module):
     def forward(self, inputs, targets, smooth=1):
 
         # comment out if model contains a sigmoid or equivalent activation layer
-        # inputs = functional.sigmoid(inputs)
-        inputs_channel_size = inputs.shape[1]
-        targets_channels_size = targets.shape[1]
+        # inputs = torch.sigmoid(inputs)
+        # inputs_channel_size = inputs.shape[1]
+        # targets_channels_size = targets.shape[1]
 
-        inputs = [inputs[:, i, :, :].reshape(-1) for i in range(inputs_channel_size)]
-        targets = [targets[:, i, :, :].reshape(-1) for i in range(targets_channels_size)]
+        inputs = inputs.reshape(-1)
+        targets = targets.reshape(-1)
 
-        io_u_losses = []
-        for input_, target in zip(inputs, targets):
-            intersection = (input_ * target).sum()
-            total = (input_ + target).sum()
-            union = total - intersection
-            io_u = (intersection + smooth) / (union + smooth)
-            io_u_losses.append((1 - io_u) ** 2)
+        intersection = (inputs * targets).sum()
+        total = (inputs + targets).sum()
+        union = total - intersection
 
-        io_u_loss = sum(io_u_losses)/len(io_u_losses)
-        return io_u_loss
+        IoU = (intersection + smooth) / (union + smooth)
+
+        return 1 - IoU
+        # io_u_losses = []
+        # for input_, target in zip(inputs, targets):
+        #     intersection = (input_ * target).sum()
+        #     total = (input_ + target).sum()
+        #     union = total - intersection
+        #     io_u = (intersection + smooth) / (union + smooth)
+        #     io_u_losses.append((1 - io_u) ** 2)
+        #
+        # io_u_loss = sum(io_u_losses)/len(io_u_losses)
+        # return io_u_loss
 
 
 ALPHA = 0.8
@@ -50,7 +57,7 @@ class FocalLoss(nn.Module):
 
     def forward(self, inputs, targets, alpha=ALPHA, gamma=GAMMA, smooth=1):
         # comment out if your model contains a sigmoid or equivalent activation layer
-        inputs = torch.sigmoid(inputs)
+        # inputs = torch.sigmoid(inputs)
 
         # flatten label and prediction tensors
         inputs = inputs.view(-1)
