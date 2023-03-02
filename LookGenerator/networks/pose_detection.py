@@ -4,7 +4,7 @@ import cv2
 import torch
 
 from torchvision.transforms import Resize
-from LookGenerator.config.config import PROJECT_ROOT
+from LookGenerator.config.config import Config
 
 
 def _valid_resolution(width, height, output_stride=16):
@@ -29,7 +29,7 @@ def load_posenet():
     """
         Loads posenet model
     """
-    path = os.path.join(PROJECT_ROOT, "weights", "posenet.pt")
+    path = os.path.join(Config.PROJECT_ROOT, "weights", "posenet.pt")
     net = torch.jit.load(path)
     return net
 
