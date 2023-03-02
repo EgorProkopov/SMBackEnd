@@ -14,17 +14,24 @@ class DirInfo:
     extension: str
 
 
-def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
+def load_image_for_test(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
     # print(root_dir + dir_name + file_name + extension)
     # input()
     # return cv2.imread(root_dir + dir_name + file_name + extension, cv2.IMREAD_COLOR)
     return Image.open(root_dir + dir_name + file_name + extension)
-    #     os.path.join(
-    #         root_dir,
-    #         dir_name,
-    #         file_name + extension
-    #     )
-    # )
+
+
+def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
+    # print(root_dir + dir_name + file_name + extension)
+    # input()
+    # return cv2.imread(root_dir + dir_name + file_name + extension, cv2.IMREAD_COLOR)
+    return Image.open(  # root_dir + dir_name + file_name + extension)
+        os.path.join(
+            root_dir,
+            dir_name,
+            file_name + extension
+        )
+    )
 
 
 def convert_channel(image: Image):
