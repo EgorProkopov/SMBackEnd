@@ -6,7 +6,7 @@ import numpy as np
 
 from PIL import Image
 from dataclasses import dataclass
-
+import cv2
 
 @dataclass
 class DirInfo:
@@ -14,8 +14,18 @@ class DirInfo:
     extension: str
 
 
+def load_image_for_test(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
+    # print(root_dir + dir_name + file_name + extension)
+    # input()
+    # return cv2.imread(root_dir + dir_name + file_name + extension, cv2.IMREAD_COLOR)
+    return Image.open(root_dir + dir_name + file_name + extension)
+
+
 def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> Image:
-    return Image.open(
+    # print(root_dir + dir_name + file_name + extension)
+    # input()
+    # return cv2.imread(root_dir + dir_name + file_name + extension, cv2.IMREAD_COLOR)
+    return Image.open(  # root_dir + dir_name + file_name + extension)
         os.path.join(
             root_dir,
             dir_name,
@@ -28,23 +38,17 @@ def convert_channel(image: Image):
     return np.asarray(image.convert('L')) / 255
 
 
-def prepare_image_for_model_transpose(image: Image):
+def prepare_image_for_model(image: Image, transform= None):
     """
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
-    Выдает тензор [новое измерение, количество каналов, ширина, высота]
+    Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
+    (при наличии оных)
     """
-    tensor = torch.tensor(np.asarray(image, dtype=np.float32)[..., np.newaxis].T)
-    tensor = transforms.Resize((192, 256))(tensor)
+    tensor = torch.tensor(np.asarray(image, dtype=np.float32).T[np.newaxis, ...])
+    tensor = torch.transpose(tensor, 3, 2)
+    tensor = transform(tensor)
 
     return tensor
-
-
-def prepare_image_for_model(image: Image):
-    """
-    На вход подается трехканальная картинка (количество каналов, ширина, высота)
-    На выход подается трехканальная картинка (новое измерение, количество каналов, ширина, высота)
-    """
-    return torch.tensor(np.asarray(image, dtype=np.float32)[np.newaxis, ...])
 
 
 def to_array_from_model_transpose(tensor):
@@ -55,12 +59,12 @@ def to_array_from_model_transpose(tensor):
     return tensor.detach().numpy()[0, :, :, :].T
 
 
-def to_array_from_model_bin_transpose(tensor):
+def to_array_from_model_bin(tensor):
     """
     На вход подается тензор из модели [измерение, количество каналов, ширина, высота]
     На выход получается массив numpy [высота, ширина, количество каналов]
     """
-    return tensor.detach().numpy()[0, 0, :, :].T
+    return tensor.detach().numpy()[0, 0, :, :]
 
 
 def show_array_as_image(array: np.array):
