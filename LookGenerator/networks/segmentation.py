@@ -91,6 +91,10 @@ class UNet(nn.Module):
         # out = self.sigmoid(out)
 
         return out
+    
+    @staticmethod
+    def load():
+        pass
 
 
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
