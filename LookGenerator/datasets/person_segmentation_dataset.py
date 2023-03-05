@@ -79,7 +79,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         if self.transform_mask:
             target = self.transform_mask(target)
 
-        return input_, target
+        return input_.float(), target.float()
 
     def __len__(self):
         """
