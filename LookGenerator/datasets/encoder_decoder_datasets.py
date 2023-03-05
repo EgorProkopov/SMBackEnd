@@ -64,7 +64,12 @@ class EncoderDecoderDataset(Dataset):
                                                 pose_point,
                                                 ".png"))
             point = to_tensor(point)
+
+            if self.transform_pose_points:
+                point = self.transform_pose_points(point)
+
             pose_points.cat((pose_points, point), axis=0)
+
 
         # Clothes
         clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], ".jpg")
