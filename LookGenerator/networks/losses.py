@@ -58,6 +58,31 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
+class FocalLossMultyClasses(nn.Module):
+    def __init__(self, alpha=0.5, gamma=2, reduction='mean'):
+        super(FocalLossMultyClasses, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        targets = targets.float()
+        batch_size, num_classes = inputs.size(0), inputs.size(1)
+        inputs = inputs.view(batch_size, num_classes, -1)
+        targets = targets.view(batch_size, -1)
+
+        ce_loss = functional.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
+        pt = torch.exp(-ce_loss)
+        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+
+        if self.reduction == 'mean':
+            focal_loss = torch.mean(focal_loss)
+        elif self.reduction == 'sum':
+            focal_loss = torch.sum(focal_loss)
+
+        return focal_loss
+
+
 class DiceLoss(nn.Module):
     def __init__(self, smooth=1):
         super(DiceLoss, self).__init__()
