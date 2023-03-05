@@ -89,7 +89,7 @@ def show_array_multichannel(array):
 
     plt.figure(figsize=(18, 6))
     ctr = 0
-    for i in range(8, 16):
+    for i in range(8, 15):
         ctr += 1
         plt.subplot(1, 8, ctr)
         plt.xticks([])
