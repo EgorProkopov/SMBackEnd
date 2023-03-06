@@ -67,6 +67,20 @@ def to_array_from_model_bin(tensor):
     return tensor.detach().numpy()[0, 0, :, :]
 
 
+def prepare_image_for_encoder(human_image: Image, pose_points, clothes_image: Image, transform_input):
+    to_tensor_transform = transform_input.ToTensor()
+    to_tensor = transforms.ToTensor()
+    human_image = to_tensor_transform(human_image)
+
+    # Pose points
+    pose_points = to_tensor_transform(pose_points)
+
+    # Clothes
+    clothes_image = to_tensor_transform(clothes_image)
+
+    return torch.cat((pose_points, human_image, clothes_image), axis=0)
+
+
 def to_array_from_decoder(tensor):
     tensor = torch.transpose(tensor, 3, 1)
     return tensor.detach().numpy()[0]
@@ -76,7 +90,7 @@ def show_array_as_image(array: np.array):
     return plt.imshow(array)
 
 
-def show_array_multichannel(array):
+def show_array_multichannel(array, num_channels):
 
     """
     На вход подается массив numpy [ВЫСОТА, ШИРИНА, КАНАЛЫ]
@@ -86,7 +100,7 @@ def show_array_multichannel(array):
     """
 
     plt.figure(figsize=(18, 6))
-    for i in range(1, 16 // 2 + 1):
+    for i in range(1, num_channels // 2):
         plt.subplot(1, 8, i)
         plt.xticks([])
         plt.yticks([])
@@ -94,7 +108,7 @@ def show_array_multichannel(array):
 
     plt.figure(figsize=(18, 6))
     ctr = 0
-    for i in range(8, 15):
+    for i in range(num_channels // 2, num_channels):
         ctr += 1
         plt.subplot(1, 8, ctr)
         plt.xticks([])
