@@ -40,9 +40,9 @@ class IoULoss(nn.Module):
 class FocalLoss(nn.Module):
     def __init__(self, alpha=0.8, gamma=2, smooth=1, weight=None, size_average=True):
         super(FocalLoss, self).__init__()
-        self.alpha=alpha
-        self.gamma=gamma
-        self.smooth=smooth
+        self.alpha = alpha
+        self.gamma = gamma
+        self.smooth = smooth
 
     def forward(self, inputs, targets):
         # Раскомментить, если модель на выходе имеет сигмоиду или другую аналогичную ей функцию
@@ -51,9 +51,11 @@ class FocalLoss(nn.Module):
         inputs = inputs.view(-1)
         targets = targets.view(-1)
 
-        everyone = functional.binary_cross_entropy(inputs, targets, reduction='mean')
-        all_exp = torch.exp(-everyone)
-        focal_loss = self.alpha * (1 - all_exp) ** self.gamma * everyone
+        criterion = nn.BCELoss(reduction='mean')
+
+        bce = criterion(inputs, targets)
+        bce_exp = torch.exp(-bce)
+        focal_loss = self.alpha * (1 - bce_exp) ** self.gamma * bce
 
         return focal_loss
 
@@ -96,3 +98,18 @@ class DiceLoss(nn.Module):
         dice = (2 * intersection + self.smooth) / (inputs.sum() + targets.sum())
 
         return 1 - dice
+
+
+class FocalDiceLoss(nn.Module):
+    def __init__(self, alpha=0.5, gamma=2, smooth=1):
+        super(FocalDiceLoss, self).__init__()
+        self.focal = FocalLoss(alpha, gamma, smooth)
+        self.dice = DiceLoss()
+
+    def forward(self, inputs, target):
+
+        fcl = self.focal(inputs, target)
+        dc = self.dice(inputs, target)
+        fd = fcl + dc
+
+        return fd
