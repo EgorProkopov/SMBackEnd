@@ -101,15 +101,16 @@ class DiceLoss(nn.Module):
 
 
 class FocalDiceLoss(nn.Module):
-    def __init__(self, alpha=0.5, gamma=2, smooth=1):
+    def __init__(self, alpha=0.5, gamma=2, smooth=1, weight=1):
         super(FocalDiceLoss, self).__init__()
         self.focal = FocalLoss(alpha, gamma, smooth)
         self.dice = DiceLoss()
+        self.weight = weight
 
     def forward(self, inputs, target):
 
         fcl = self.focal(inputs, target)
         dc = self.dice(inputs, target)
-        fd = fcl + dc
+        fd = self.weight*fcl + dc
 
         return fd
