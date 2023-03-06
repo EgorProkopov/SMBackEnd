@@ -67,6 +67,11 @@ def to_array_from_model_bin(tensor):
     return tensor.detach().numpy()[0, 0, :, :]
 
 
+def to_array_from_decoder(tensor):
+    tensor = torch.transpose(tensor, 3, 1)
+    return tensor.detach().numpy()[0]
+
+
 def show_array_as_image(array: np.array):
     return plt.imshow(array)
 
