@@ -115,7 +115,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = FocalLossMultyClasses()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
+    criterion = FocalDiceLoss()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
@@ -140,7 +140,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         train_loss = train_running_loss/len(train_dataloader)
         train_history.append(train_loss)
         print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.5f}')
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
 
         val_running_loss = 0.0
         model.eval()
@@ -158,7 +158,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
         val_loss = val_running_loss/len(val_dataloader)
         val_history.append(val_loss)
         print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.5f}')
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
 
         save_model(model.to('cpu'), path=f"{save_directory}\\unet_epoch_{epoch}_{val_loss}.pt")
 

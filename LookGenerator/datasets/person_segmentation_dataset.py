@@ -49,18 +49,18 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         target = []
 
         channel_list = os.listdir(os.path.join(
-                                                self.root,
-                                                "image-parse-v3-multichannel",
-                                                self._files_list[idx]
-                                                ))
+            self.root,
+            "image-parse-v3-multichannel",
+            self._files_list[idx]
+        ))
 
         channel_files_list = [file.split('.')[0] for file in channel_list]
 
         for channel in channel_files_list:
             target.append(convert_channel(load_image(self.root,
-                                            os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
-                                            channel,
-                                            ".png")))
+                                                     os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
+                                                     channel,
+                                                     ".png")))
 
         if self.augment:
             transformed = self.augment(image=input_, masks=target)

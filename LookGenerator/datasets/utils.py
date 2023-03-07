@@ -56,7 +56,7 @@ def to_array_from_model_transpose(tensor):
     На вход подается тензор из модели [измерение, количество каналов, ширина, высота]
     На выход получается массив numpy [высота, ширина, количество каналов]
     """
-    return tensor.detach().numpy()[0, :, :, :].T
+    return tensor.detach().numpy()[0, :, :, :]
 
 
 def to_array_from_model_bin(tensor):
@@ -125,19 +125,18 @@ def show_array_multichannel(array, num_channels):
 
     Вспомогательная функция, которая была использована для показа 16 канальных изображений
     """
-
     plt.figure(figsize=(18, 6))
-    for i in range(1, num_channels // 2):
+    for i in range(1, num_channels // 2 + 1 + num_channels % 2):
         plt.subplot(1, 8, i)
         plt.xticks([])
         plt.yticks([])
-        plt.imshow(array[:, :, i - 1], cmap='gray')
+        plt.imshow(array[i - 1, :, :], cmap='gray')
 
     plt.figure(figsize=(18, 6))
     ctr = 0
-    for i in range(num_channels // 2, num_channels):
+    for i in range(num_channels // 2 + num_channels % 2, num_channels):  # mb need fix
         ctr += 1
         plt.subplot(1, 8, ctr)
         plt.xticks([])
         plt.yticks([])
-        plt.imshow(array[:, :, i], cmap='gray')
+        plt.imshow(array[i, :, :], cmap='gray')

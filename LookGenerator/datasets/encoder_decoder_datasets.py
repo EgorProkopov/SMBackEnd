@@ -38,7 +38,7 @@ class EncoderDecoderDataset(Dataset):
         to_tensor_transform = transforms.ToTensor()
 
         # Human image
-        human_image = load_image(self.root, "imageWithNoCloth", self.list_of_human_no_clothes_files[idx], ".png")
+        human_image = load_image(self.root, "imageWithNoCloth", self.list_of_human_no_clothes_files[idx], "")
         human_image = to_tensor_transform(human_image)
 
         if self.transform_human:
@@ -67,16 +67,16 @@ class EncoderDecoderDataset(Dataset):
             if self.transform_pose_points:
                 point = self.transform_pose_points(point)
 
-            pose_points.cat((pose_points, point), axis=0)
+            pose_points = torch.cat((pose_points, point), axis=0)
 
         # Clothes
-        clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], ".jpg")
+        clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], "")
         clothes_image = to_tensor_transform(clothes_image)
         if self.transform_clothes:
             clothes_image = self.transform_clothes(clothes_image)
 
         # Restored image
-        human_restored_image = load_image(self.root, "image", self.list_of_human_image_files[idx], ".jpg")
+        human_restored_image = load_image(self.root, "image", self.list_of_human_image_files[idx], "")
         human_restored_image = to_tensor_transform(human_restored_image)
 
         if self.transform_human_restored:
@@ -85,7 +85,7 @@ class EncoderDecoderDataset(Dataset):
         input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)  # не забыть про pose_points
         target = human_restored_image
 
-        return input_, target
+        return input_.float(), target.float()
 
     def __len__(self):
         return len(self.list_of_human_no_clothes_files)
