@@ -82,7 +82,7 @@ def prepare_images_for_encoder(human_image: Image, pose_points_list: list, cloth
     to_tensor = transforms.ToTensor()
     human_image = to_tensor(human_image)
     if input_transform:
-        human_image = input_transform(input_transform)
+        human_image = input_transform(human_image)
 
     # Pose points
     pose_points = torch.empty(0)
@@ -91,7 +91,7 @@ def prepare_images_for_encoder(human_image: Image, pose_points_list: list, cloth
         if input_transform:
             pose_point = input_transform(pose_point)
 
-        torch.cat((pose_points, pose_point))
+        pose_points = torch.cat((pose_points, pose_point))
 
     # Clothes
     clothes_image = to_tensor(clothes_image)
