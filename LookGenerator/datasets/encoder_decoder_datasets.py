@@ -36,7 +36,6 @@ class EncoderDecoderDataset(Dataset):
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
         to_tensor_transform = transforms.ToTensor()
-        to_tensor = torch.ToTensor()
 
         # Human image
         human_image = load_image(self.root, "imageWithNoCloth", self.list_of_human_no_clothes_files[idx], ".png")
@@ -63,13 +62,12 @@ class EncoderDecoderDataset(Dataset):
                                                 os.path.join("posePoints", self.list_of_pose_points_files[idx]),
                                                 pose_point,
                                                 ".png"))
-            point = to_tensor(point)
+            point = to_tensor_transform(point)
 
             if self.transform_pose_points:
                 point = self.transform_pose_points(point)
 
             pose_points.cat((pose_points, point), axis=0)
-
 
         # Clothes
         clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], ".jpg")
