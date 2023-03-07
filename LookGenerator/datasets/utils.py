@@ -67,36 +67,38 @@ def to_array_from_model_bin(tensor):
     return tensor.detach().numpy()[0, 0, :, :]
 
 
-def prepare_images_for_encoder(human_image: Image, pose_points_list: list, clothes_image: Image, input_transform=None):
+def prepare_images_for_encoder(human_image: Image, pose_points_list: list, clothes_image: Image,
+                               input_rgb_transform=None, input_bin_transform=None):
     """
     Function for images preparation before encoder-decoder
     Args:
         human_image: a human image for encoder-decoder input
         pose_points_list: a list of images of pose points for encoder-decoder input
         clothes_image: clothes image for encoder-decoder input
-        input_transform: input images transform
+        input_rgb_transform: input images transform
+        input_bin_transform: input pose points transform
 
     Returns:
         Torch tensor that can be an input of encoder-decoder model
     """
     to_tensor = transforms.ToTensor()
     human_image = to_tensor(human_image)
-    if input_transform:
-        human_image = input_transform(human_image)
+    if input_rgb_transform:
+        human_image = input_rgb_transform(human_image)
 
     # Pose points
     pose_points = torch.empty(0)
     for pose_point in pose_points_list:
         pose_point = to_tensor(pose_point)
-        if input_transform:
-            pose_point = input_transform(pose_point)
+        if input_bin_transform:
+            pose_point = input_bin_transform(pose_point)
 
         pose_points = torch.cat((pose_points, pose_point))
 
     # Clothes
     clothes_image = to_tensor(clothes_image)
-    if input_transform:
-        clothes_image = input_transform(clothes_image)
+    if input_rgb_transform:
+        clothes_image = input_rgb_transform(clothes_image)
 
     enc_dec_input = torch.cat((pose_points, human_image, clothes_image), axis=0)
     enc_dec_input = torch.reshape(enc_dec_input, (
