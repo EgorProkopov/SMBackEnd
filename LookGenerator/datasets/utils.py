@@ -111,7 +111,7 @@ def prepare_images_for_encoder(human_image: Image, pose_points_list: list, cloth
 
 
 def to_array_from_decoder(tensor):
-    tensor = torch.transpose(tensor, 3, 1)
+    tensor = torch.transpose(torch.transpose(tensor, 3, 1), 1, 2)
     return tensor.detach().numpy()[0]
 
 
