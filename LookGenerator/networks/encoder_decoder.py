@@ -14,7 +14,7 @@ class EncoderDecoder(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv_module1 = Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU())
-        self.conv_module2 = Conv3x3(in_channels=64, out_channels=128, batch_norm=True, activation_func=nn.LeakyReLU())
+        self.conv_module2 = Conv5x5(in_channels=64, out_channels=128, batch_norm=True, activation_func=nn.LeakyReLU())
         self.conv_module3 = Conv3x3(in_channels=128, out_channels=256, batch_norm=True, activation_func=nn.LeakyReLU())
         self.conv_module4 = Conv3x3(in_channels=256, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
         self.conv_module5 = Conv3x3(in_channels=512, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
@@ -46,7 +46,8 @@ class EncoderDecoder(nn.Module):
         #                           batch_norm=True, activation_func=nn.Tanh())
 
         self.final_conv = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1)
+            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
+            nn.Tanh()
         )
 
     def forward(self, x):
@@ -62,7 +63,7 @@ class EncoderDecoder(nn.Module):
         skip_connections = []
 
         out = self.conv_module1(x)
-        skip_connections.append(out)
+        #skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.conv_module2(out)
@@ -84,23 +85,23 @@ class EncoderDecoder(nn.Module):
         out = self.bottle_neck(out)
 
         out = self.deconv_module1(out)
-        out = torch.cat((out, skip_connections[4]), axis=1)
+        out = torch.cat((out, skip_connections[3]), axis=1)
         out = self.deconv_conv_module1(out)
 
         out = self.deconv_module2(out)
-        out = torch.cat((out, skip_connections[3]), axis=1)
+        out = torch.cat((out, skip_connections[2]), axis=1)
         out = self.deconv_conv_module2(out)
 
         out = self.deconv_module3(out)
-        out = torch.cat((out, skip_connections[2]), axis=1)
+        out = torch.cat((out, skip_connections[1]), axis=1)
         out = self.deconv_conv_module3(out)
 
         out = self.deconv_module4(out)
-        out = torch.cat((out, skip_connections[1]), axis=1)
+        out = torch.cat((out, skip_connections[0]), axis=1)
         out = self.deconv_conv_module4(out)
 
         out = self.deconv_module5(out)
-        out = torch.cat((out, skip_connections[0]), axis=1)
+        #out = torch.cat((out, skip_connections[0]), axis=1)
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
