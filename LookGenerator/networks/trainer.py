@@ -58,7 +58,7 @@ class Trainer:
                 print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.5f}')
                 now = datetime.datetime.now()
                 print("Epoch end time", now.strftime("%d-%m-%Y %H:%M"))
-            #  torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
 
             # Validation
             val_loss = self._val_epoch(val_dataloader)
@@ -67,7 +67,7 @@ class Trainer:
                 print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.5f}')
                 now = datetime.datetime.now()
                 print("Epoch end time", now.strftime("%d-%m-%Y %H:%M"))
-            #  torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
 
             # Save
             if self.save_step == 0 or self.save_directory == "":
