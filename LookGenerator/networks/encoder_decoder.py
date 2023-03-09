@@ -22,24 +22,30 @@ class EncoderDecoder(nn.Module):
         self.bottle_neck = Conv3x3(in_channels=512, out_channels=512,
                                    batch_norm=True, activation_func=nn.ReLU())
 
+        deconv_input_scaler = 1
+
         self.deconv_module1 = nn.UpsamplingNearest2d(scale_factor=2)
-        self.deconv_conv_module1 = Conv5x5(in_channels=512*2, out_channels=512,
+        self.deconv_conv_module1 = Conv5x5(in_channels=512*deconv_input_scaler, out_channels=512,
                                            batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module2 = nn.UpsamplingNearest2d(scale_factor=2)
-        self.deconv_conv_module2 = Conv5x5(in_channels=512*2, out_channels=256,
+        self.deconv_conv_module2 = Conv5x5(in_channels=512*deconv_input_scaler, out_channels=256,
                                            batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module3 = nn.UpsamplingNearest2d(scale_factor=2)
-        self.deconv_conv_module3 = Conv5x5(in_channels=256*2, out_channels=128,
+        self.deconv_conv_module3 = Conv5x5(in_channels=256*deconv_input_scaler, out_channels=128,
                                            batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module4 = nn.UpsamplingNearest2d(scale_factor=2)
-        self.deconv_conv_module4 = Conv5x5(in_channels=128*2, out_channels=64,
+        self.deconv_conv_module4 = Conv5x5(in_channels=128*deconv_input_scaler, out_channels=64,
                                            batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module5 = nn.UpsamplingNearest2d(scale_factor=2)
+<<<<<<< Updated upstream
         self.deconv_conv_module5 = Conv5x5(in_channels=64, out_channels=32,
+=======
+        self.deconv_conv_module5 = Conv5x5(in_channels=64*deconv_input_scaler, out_channels=32,
+>>>>>>> Stashed changes
                                            batch_norm=True, activation_func=nn.ReLU())
 
         # self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
@@ -63,45 +69,45 @@ class EncoderDecoder(nn.Module):
         skip_connections = []
 
         out = self.conv_module1(x)
-        #skip_connections.append(out)
+        # skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.conv_module2(out)
-        skip_connections.append(out)
+        # skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.conv_module3(out)
-        skip_connections.append(out)
+        # skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.conv_module4(out)
-        skip_connections.append(out)
+        # skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.conv_module5(out)
-        skip_connections.append(out)
+        # skip_connections.append(out)
         out = self.max_pool(out)
 
         out = self.bottle_neck(out)
 
         out = self.deconv_module1(out)
-        out = torch.cat((out, skip_connections[3]), axis=1)
+        # out = torch.cat((out, skip_connections[3]), axis=1)
         out = self.deconv_conv_module1(out)
 
         out = self.deconv_module2(out)
-        out = torch.cat((out, skip_connections[2]), axis=1)
+        # out = torch.cat((out, skip_connections[2]), axis=1)
         out = self.deconv_conv_module2(out)
 
         out = self.deconv_module3(out)
-        out = torch.cat((out, skip_connections[1]), axis=1)
+        # out = torch.cat((out, skip_connections[1]), axis=1)
         out = self.deconv_conv_module3(out)
 
         out = self.deconv_module4(out)
-        out = torch.cat((out, skip_connections[0]), axis=1)
+        # out = torch.cat((out, skip_connections[0]), axis=1)
         out = self.deconv_conv_module4(out)
 
         out = self.deconv_module5(out)
-        #out = torch.cat((out, skip_connections[0]), axis=1)
+        # out = torch.cat((out, skip_connections[0]), axis=1)
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
