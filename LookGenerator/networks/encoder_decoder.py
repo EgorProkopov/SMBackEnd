@@ -39,7 +39,7 @@ class EncoderDecoder(nn.Module):
                                            batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module5 = nn.UpsamplingNearest2d(scale_factor=2)
-        self.deconv_conv_module5 = Conv5x5(in_channels=64*2, out_channels=32,
+        self.deconv_conv_module5 = Conv5x5(in_channels=64, out_channels=32,
                                            batch_norm=True, activation_func=nn.ReLU())
 
         # self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
