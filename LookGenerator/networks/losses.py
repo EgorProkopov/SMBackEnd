@@ -38,7 +38,7 @@ class IoULoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=1, gamma=2, smooth=1, weight=None, size_average=True):
+    def __init__(self, alpha=0.8, gamma=2, smooth=1, weight=None, size_average=True):
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -117,13 +117,13 @@ class FocalDiceLoss(nn.Module):
 
 
 class FocalTverskyLoss(nn.Module):
-    def __init__(self, alpha=0.5, beta=0.5, gamma=1, smooth=1, weight=None, size_average=True):
+    def __init__(self, alpha=0.8, beta=0.2, gamma=1, smooth=1, weight=None, size_average=True):
         super(FocalTverskyLoss, self).__init__()
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
         self.smooth = smooth
-        self.weight=weight
+        self.weight = weight
 
     def forward(self, inputs, targets):
         # comment out if your model contains a sigmoid or equivalent activation layer
