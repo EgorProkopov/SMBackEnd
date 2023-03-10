@@ -115,7 +115,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = FocalTverskyLoss()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
+    criterion = FocalLoss()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
