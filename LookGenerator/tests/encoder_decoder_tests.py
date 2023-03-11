@@ -14,7 +14,9 @@ def test_output_shape():
     ])
     input_ = transform(input_)[None, :]
 
-    model = EncoderDecoder(in_channels=3, out_channels=4)
+    out_channels = 3
+
+    model = EncoderDecoder(in_channels=3, out_channels=out_channels)
     output = model(input_)
     plt.imshow(output.detach().numpy()[0, 0, :, :])
     plt.show()
@@ -23,7 +25,7 @@ def test_output_shape():
     plt.imshow(output.detach().numpy()[0, 2, :, :])
     plt.show()
     print(output.shape)
-    assert output.shape == (1, 4, 256, 192)
+    assert output.shape == (1, out_channels, 256, 192)
 
 
 if __name__ == "__main__":
