@@ -116,7 +116,7 @@ class EncoderDecoderDataset(Dataset):
             input_ = torch.cat((human_image, clothes_image), axis=0)
         target = human_restored_image
 
-        return input_.float(), target.float() 
+        return input_.float(), target.float()
 
     def __len__(self):
         return len(self.list_of_human_no_clothes_files)
