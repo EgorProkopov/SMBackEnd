@@ -125,6 +125,12 @@ def to_array_from_decoder(tensor):
     return tensor.detach().numpy()[0]
 
 
+def to_image_from_decoder(tensor):
+    array = to_array_from_decoder(tensor)
+    im = Image.fromarray(np.uint8(255*array)) .convert('RGB')
+    return im
+
+
 def show_array_as_image(array: np.array):
     return plt.imshow(array)
 
