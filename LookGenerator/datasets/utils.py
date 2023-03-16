@@ -38,7 +38,7 @@ def convert_channel(image: Image):
     return np.asarray(image.convert('L')) / 255
 
 
-def prepare_image_for_model(image: Image, transform= None):
+def prepare_image_for_segmentation(image: Image, transform= None):
     """
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
@@ -111,7 +111,8 @@ def prepare_images_for_encoder(human_image: Image, pose_points_list: list, cloth
 
 
 def to_array_from_decoder(tensor):
-    tensor = torch.transpose(torch.transpose(tensor, 3, 1), 1, 2)
+    tensor = torch.transpose(tensor, 3, 1)
+    tensor = torch.transpose(tensor, 1, 2)
     return tensor.detach().numpy()[0]
 
 
