@@ -14,7 +14,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
     Might be deprecated soon
     """
 
-    def __init__(self, image_dir: str, transform_input=None, transform_mask=None):
+    def __init__(self, image_dir: str, transform_input=None, transform_mask=None, augment=None):
         """
         Args:
             image_dir: Directory with all images
@@ -27,6 +27,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         self.root = image_dir
         self.transform_input = transform_input
         self.transform_mask = transform_mask
+        self.augment = augment
 
         list_of_files = os.listdir(image_dir + r"\image")
         self._files_list = [file.split('.')[0] for file in list_of_files]
@@ -44,37 +45,40 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 
         to_tensor = ToTensor()
 
-        input_ = load_image(self.root, "image", self._files_list[idx],
-                            ".jpg")
+        input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
+        target = []
+
+        channel_list = os.listdir(os.path.join(
+            self.root,
+            "image-parse-v3-multichannel",
+            self._files_list[idx]
+        ))
+
+        channel_files_list = [file.split('.')[0] for file in channel_list]
+
+        for channel in channel_files_list:
+            target.append(convert_channel(load_image(self.root,
+                                                     os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
+                                                     channel,
+                                                     ".png")))
+
+        if self.augment:
+            transformed = self.augment(image=input_, masks=target)
+            input_ = transformed['image']
+            target = transformed['masks']
+
         input_ = to_tensor(input_)
+        target = to_tensor(np.array(target))
+
+        target = torch.transpose(target, 0, 1)
+        target = torch.transpose(target, 1, 2)
 
         if self.transform_input:
             input_ = self.transform_input(input_)
 
-        target = torch.empty(0)
-        channel_list = os.listdir(os.path.join(
-                                                self.root,
-                                                "image-densepose-multichannel",
-                                                self._files_list[idx]
-                                                ))
-        channel_files_list = [file.split('.')[0] for file in channel_list]
-
-        for channel in channel_files_list:
-            target_channel = convert_channel(load_image(self.root,
-                                             os.path.join("image-densepose-multichannel", self._files_list[idx]),
-                                             channel,
-                                             ".png"))
-            target_channel = to_tensor(target_channel)
-
-            if self.transform_mask:
-                target_channel = self.transform_mask(target_channel)
-
-            target = torch.cat((target, target_channel), axis=0)
-
-        target = torch.transpose(target, 0, 2)
-        target = torch.transpose(target, 0, 1)
-
-        return input_, target
+        if self.transform_mask:
+            target = self.transform_mask(target)
+        return input_.float(), target.float()
 
     def __len__(self):
         """
@@ -91,7 +95,9 @@ class PersonSegmentationDataset(Dataset):
         """
         Args:
             image_dir: Directory with all images
-            transforms: transforms from albumentations to be used on image and mask
+            transform_input: transform to be performed on an input, from pytorch
+            transform_output: transform to be performed on an output, from pytorch
+            augment: transforms from albumentations to be used on image and mask
         """
 
         super().__init__()
@@ -119,6 +125,7 @@ class PersonSegmentationDataset(Dataset):
 
         input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
         target = np.array(load_image(self.root, "mask", self._files_list[idx], ".png"))
+
         if self.augment:
             transformed = self.augment(image=input_, mask=target)
             input_ = transformed['image']
@@ -129,13 +136,9 @@ class PersonSegmentationDataset(Dataset):
 
         if self.transform_input:
             input_ = self.transform_input(input_)
-            # transformed = self.transform_image(image=input_)
-            # input_ = transformed['image']
 
         if self.transform_output:
             input_ = self.transform_output(target)
-            # transformed = self.transform_mask(mask=target)
-            # target = transformed['mask']
 
         return input_, target
 

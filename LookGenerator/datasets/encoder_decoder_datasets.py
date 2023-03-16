@@ -4,69 +4,119 @@ import torchvision.transforms as transforms
 
 from typing import Tuple
 from torch.utils.data import Dataset
-from LookGenerator.datasets.utils import load_image
+from LookGenerator.datasets.utils import load_image, convert_channel
 
 
-class PosePackDataset(Dataset):
+class EncoderDecoderDataset(Dataset):
     """Dataset for Encoder-Decoder model training"""
     def __init__(self, image_dir: str,
-                 transform_pose_heatmap=None,
+                 pose_points=False,
                  transform_human=None,
                  transform_pose_points=None,
-                 transform_human_restored=None,
-                 transform_clothes_mask=None):
+                 transform_clothes=None,
+                 transform_human_restored=None):
+        """
 
+        Args:
+            image_dir: dir to the dataset folder
+                Directory must contain such subdirectories as:
+                    - human
+                    - human after segmentation part
+                    - pose-points dataset (if it doesn't, don't set pose_point=True)
+                    - clothes
+            pose_points: if use pose points in encoder-decoder model, set 'True'
+            transform_human: transform to be performed on an input human (after segmentation), from pytorch
+            transform_pose_points: transform to be performed on an input pose points, from pytorch
+            transform_clothes: transform to be performed on an input clothes, from pytorch
+            transform_human_restored: transform to be performed on an output restored human, from pytorch
+        """
         super().__init__()
 
+        self.pose_points = pose_points
+
         self.root = image_dir
-        self.transform_pose_heatmap = transform_pose_heatmap
+
         self.transform_human = transform_human
-        self.transform_pose_points = transform_pose_points
+        if self.pose_points:
+            self.transform_pose_points = transform_pose_points
+        self.transform_clothes = transform_clothes
         self.transform_human_restored = transform_human_restored
-        self.transform_clothes_mask = transform_clothes_mask
 
-        # TODO: прописать пути до всех папок для датасета
-        list_of_pose_heatmap_files = os.listdir(image_dir)
-        list_of_human_files = os.listdir(image_dir)
-        list_of_pose_points_files = os.listdir(image_dir)
-        list_of_human_image_files = os.listdir(image_dir)
-        list_of_clothes_mask_files = os.listdir(image_dir)
+        list_of_human_no_clothes_files = os.listdir(os.path.join(image_dir, "imageWithNoCloth"))
+        if self.pose_points:
+            list_of_pose_points_files = os.listdir(os.path.join(image_dir, "posePoints"))
+        list_of_clothes_files = os.listdir(os.path.join(image_dir, "cloth"))
+        list_of_human_image_files = os.listdir(os.path.join(image_dir, "image"))
 
-        self.list_of_pose_heatmap_files = list_of_pose_heatmap_files
-        self.list_of_human_files = list_of_human_files
-        self.list_of_pose_points_files = list_of_pose_points_files
+        self.list_of_human_no_clothes_files = list_of_human_no_clothes_files
+        if self.pose_points:
+            self.list_of_pose_points_files = list_of_pose_points_files
+        self.list_of_clothes_files = list_of_clothes_files
         self.list_of_human_image_files = list_of_human_image_files
-        self.list_of_clothes_mask_files = list_of_clothes_mask_files
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Args:
+            idx: The index of data sample
+
+        Returns: A pait of input and target objects
+
+        """
         to_tensor_transform = transforms.ToTensor()
 
-        # TODO: прописать загрузку картинок
-        pose_heatmap_image = load_image(self.root, "image", self.list_of_pose_heatmap_files[idx], ".jpg")
-        pose_heatmap_image = to_tensor_transform(pose_heatmap_image)
-        if self.transform_pose_heatmap:
-            pose_heatmap_image = self.transform_pose_heatmap(pose_heatmap_image)
-
-        human_image = load_image(self.root, "image", self.list_of_human_files[idx], ".jpg")
+        # Human image
+        human_image = load_image(self.root, "imageWithNoCloth", self.list_of_human_no_clothes_files[idx], "")
         human_image = to_tensor_transform(human_image)
+
         if self.transform_human:
             human_image = self.transform_human(human_image)
 
-        # pose_points = ???
-        human_restored_image = load_image(self.root, "image", self.list_of_human_image_files[idx], ".jpg")
+        # Pose points
+        if self.pose_points:
+            # Num of pose points: 17
+            pose_points = torch.empty(0)
+
+            points_list = os.listdir(os.path.join(
+                self.root,
+                "posePoints",
+                self.list_of_pose_points_files[idx]
+            ))
+
+            pose_points_list = [file.split('.')[0] for file in points_list]
+
+            for pose_point in pose_points_list:
+                point = convert_channel(load_image(
+                                                self.root,
+                                                os.path.join("posePoints", self.list_of_pose_points_files[idx]),
+                                                pose_point,
+                                                ".png"))
+                point = to_tensor_transform(point)
+
+                if self.transform_pose_points:
+                    point = self.transform_pose_points(point)
+
+                pose_points = torch.cat((pose_points, point), axis=0)
+
+        # Clothes
+        clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], "")
+        clothes_image = to_tensor_transform(clothes_image)
+        if self.transform_clothes:
+            clothes_image = self.transform_clothes(clothes_image)
+
+        # Restored image
+        human_restored_image = load_image(self.root, "image", self.list_of_human_image_files[idx], "")
         human_restored_image = to_tensor_transform(human_restored_image)
+
         if self.transform_human_restored:
             human_restored_image = self.transform_human_restored(human_restored_image)
 
-        clothes_mask_image = load_image(self.root, "image", self.list_of_clothes_mask_files[idx], ".jpg")
-        clothes_mask_image = to_tensor_transform(clothes_mask_image)
-        if self.transform_clothes_mask:
-            clothes_mask_image = self.transform_clothes_mask(clothes_mask_image)
+        if self.pose_points:
+            input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)
+        else:
+            input_ = torch.cat((human_image, clothes_image), axis=0)
+        target = human_restored_image
 
-        input_ = torch.cat((pose_heatmap_image, human_image), axis=0)  # не забыть про pose_points
-        target = torch.cat((human_restored_image, clothes_mask_image), axis=0)
-
-        return input_, target
+        return input_.float(), target.float()
 
     def __len__(self):
-        return len(self.list_of_human_files)
+        return len(self.list_of_human_no_clothes_files)
