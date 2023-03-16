@@ -114,6 +114,11 @@ class EncoderDecoder(nn.Module):
         out = self.final_conv(out)
 
         return out
+    
+    
+    @staticmethod
+    def load():
+        pass
 
 
 def train_encoder_decoder(
