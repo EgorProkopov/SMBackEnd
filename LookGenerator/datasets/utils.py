@@ -38,7 +38,16 @@ def convert_channel(image: Image):
     return np.asarray(image.convert('L')) / 255
 
 
-def prepare_image_for_segmentation(image: Image, transform= None):
+def clean_image_by_mask(image, mask):
+    height, width = image.shape[0], image.shape[1]
+    for i in range(height):
+        for j in range(width):
+            if mask[i, j] == 1:
+                image[i, j] = [255, 255, 255]
+
+
+def prepare_image_for_segmentation(image: Image,
+                                   transform=None):
     """
     На вход подается трехканальная картинка (высота, ширина, количество каналов)
     Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
