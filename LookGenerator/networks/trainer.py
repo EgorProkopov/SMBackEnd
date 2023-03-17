@@ -73,7 +73,7 @@ class Trainer:
             if self.save_step == 0 or self.save_directory == "":
                 continue
             if (epoch + 1) % self.save_step == 0:
-                save_model(self.model.to('cpu'), path=f"{self.save_directory}\\unet_epoch_{self._epoch_string(epoch, epoch_num)}.pt")
+                save_model(self.model.to('cpu'), path=f"{self.save_directory}\\epoch_{self._epoch_string(epoch, epoch_num)}.pt")
 
         now = datetime.datetime.now()
         print("end time", now.strftime("%d-%m-%Y %H:%M"))
