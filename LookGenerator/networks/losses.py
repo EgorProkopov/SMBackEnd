@@ -210,3 +210,4 @@ class PerceptualLoss(nn.Module):
 
         loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
+    
