@@ -203,11 +203,10 @@ class PerceptualLoss(nn.Module):
         """
         inputs_vgg, targets_vgg = self.vgg16(inputs), self.vgg16(targets)
 
-        loss_relu1_2 = self.weights[0] * self.criterion(inputs_vgg['3'], targets_vgg['3'].detach())
-        loss_relu2_2 = self.weights[1] * self.criterion(inputs_vgg['8'], targets_vgg['8'].detach())
-        loss_relu3_3 = self.weights[2] * self.criterion(inputs_vgg['15'], targets_vgg['15'].detach())
-        loss_relu4_3 = self.weights[3] * self.criterion(inputs_vgg['22'], targets_vgg['22'].detach())
+        loss_relu1_2 = self.weights[0] * self.criterion(inputs_vgg['relu1_2'], targets_vgg['relu1_2'].detach())
+        loss_relu2_2 = self.weights[1] * self.criterion(inputs_vgg['relu2_2'], targets_vgg['relu2_2'].detach())
+        loss_relu3_3 = self.weights[2] * self.criterion(inputs_vgg['relu3_3'], targets_vgg['relu3_3'].detach())
+        loss_relu4_3 = self.weights[3] * self.criterion(inputs_vgg['relu4_3'], targets_vgg['relu4_3'].detach())
 
         loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
-    
