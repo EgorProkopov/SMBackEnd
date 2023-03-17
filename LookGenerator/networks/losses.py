@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as functional
 
+import torchvision.models as models
+
 
 class IoULoss(nn.Module):
     """
@@ -146,19 +148,23 @@ class FocalTverskyLoss(nn.Module):
         return FocalTversky
 
 
-class PerceptualLossVGG(nn.Module):
-    def __init__(self, vgg_model, layer_name_mapping=None):
-        super(PerceptualLossVGG, self).__init__()
-        self.vgg_layers = vgg_model.features
+class VGG16IntermediateOutputs(nn.Module):
+    """
+    Class to get VGG16 model intermediate outputs to calculate perceptual loss
+    """
+    def __init__(self, device):
+        super(VGG16IntermediateOutputs, self).__init__()
+        vgg16_model = models.vgg16(pretrained=True)
+        vgg16_model.to(device)
+        vgg16_model.eval()
+        self.vgg_layers = vgg16_model.features
 
-        if layer_name_mapping is None:
-            layer_name_mapping = {
+        self.layer_name_mapping = {
                 '3': "relu1_2",
                 '8': "relu2_2",
                 '15': "relu3_3",
                 '22': "relu4_3"
             }
-        self.layer_name_mapping = layer_name_mapping
 
     def forward(self, x):
         output = {}
@@ -168,3 +174,39 @@ class PerceptualLossVGG(nn.Module):
                 output[self.layer_name_mapping[name]] = x
 
         return output
+
+
+class PerceptualLoss(nn.Module):
+    """
+    This perceptual loss calculate MSE loss between vgg16 activation maps
+    of model output image and target image
+    """
+    def __init__(self, device, weights=[1.0, 1.0, 1.0, 1.0]):
+        """
+        Args:
+            device: device on which loss will be calculated
+            weights: weights for loss calculation of different vgg layers
+        """
+        super(PerceptualLoss, self).__init__()
+        self.vgg16 = VGG16IntermediateOutputs(device)
+        self.criterion = nn.MSELoss()
+        self.weights = weights
+
+    def forward(self, inputs, targets):
+        """
+        Args:
+            inputs: reconstructed image, the output of our neural net
+            targets: the target image
+
+        Returns:
+            Sum of MSE losses of different vgg model outputs
+        """
+        inputs_vgg, targets_vgg = self.vgg16(inputs), self.vgg16(targets)
+
+        loss_relu1_2 = self.weights[0] * self.criterion(inputs_vgg['3'], targets_vgg['3'].detach())
+        loss_relu2_2 = self.weights[1] * self.criterion(inputs_vgg['8'], targets_vgg['8'].detach())
+        loss_relu3_3 = self.weights[2] * self.criterion(inputs_vgg['15'], targets_vgg['15'].detach())
+        loss_relu4_3 = self.weights[3] * self.criterion(inputs_vgg['22'], targets_vgg['22'].detach())
+
+        loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
+        return loss
