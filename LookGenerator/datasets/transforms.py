@@ -40,3 +40,14 @@ class ThresholdTransform(object):
             image: image to be transformed
         """
         return (image >= self.threshold).float()
+
+
+class DividerScaler(object):
+    """
+    Scalar division of tensor
+    """
+    def __init__(self, div):
+        self.div = div
+
+    def __call__(self, image):
+        return image / self.div
