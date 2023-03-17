@@ -1,3 +1,5 @@
+from typing import Dict
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as functional
@@ -142,3 +144,27 @@ class FocalTverskyLoss(nn.Module):
         FocalTversky = (1 - Tversky) ** self.gamma
 
         return FocalTversky
+
+
+class PerceptualLossVGG(nn.Module):
+    def __init__(self, vgg_model, layer_name_mapping=None):
+        super(PerceptualLossVGG, self).__init__()
+        self.vgg_layers = vgg_model.features
+
+        if layer_name_mapping is None:
+            layer_name_mapping = {
+                '3': "relu1_2",
+                '8': "relu2_2",
+                '15': "relu3_3",
+                '22': "relu4_3"
+            }
+        self.layer_name_mapping = layer_name_mapping
+
+    def forward(self, x):
+        output = {}
+        for name, module in self.vgg_layers._modules.items():
+            x = module(x)
+            if name in self.layer_name_mapping:
+                output[self.layer_name_mapping[name]] = x
+
+        return output
