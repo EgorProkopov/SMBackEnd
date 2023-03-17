@@ -15,4 +15,4 @@ def get_num_digits(a):
     while a > 0:
         num += 1
         a = a // 10
-    return a
+    return num
