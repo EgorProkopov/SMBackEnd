@@ -135,6 +135,17 @@ def show_array_as_image(array: np.array):
     return plt.imshow(array)
 
 
+def save_array_as_image(array: np.array, save_path: str):
+    """
+    Method to save image from numpy array
+    Args:
+        array: a source array
+        save_path: path to save an image
+    """
+    image = Image.fromarray(array)
+    image.save(save_path)
+
+
 def show_array_multichannel(array, num_channels):
 
     """
