@@ -1,4 +1,6 @@
 import os
+
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 
@@ -14,7 +16,8 @@ class EncoderDecoderDataset(Dataset):
                  transform_human=None,
                  transform_pose_points=None,
                  transform_clothes=None,
-                 transform_human_restored=None):
+                 transform_human_restored=None,
+                 augment=None):
         """
 
         Args:
@@ -41,6 +44,7 @@ class EncoderDecoderDataset(Dataset):
             self.transform_pose_points = transform_pose_points
         self.transform_clothes = transform_clothes
         self.transform_human_restored = transform_human_restored
+        self.augment = augment
 
         list_of_human_no_clothes_files = os.listdir(os.path.join(image_dir, "imageWithNoCloth"))
         if self.pose_points:
@@ -54,7 +58,7 @@ class EncoderDecoderDataset(Dataset):
         self.list_of_clothes_files = list_of_clothes_files
         self.list_of_human_image_files = list_of_human_image_files
 
-    def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx): #-> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             idx: The index of data sample
@@ -62,6 +66,7 @@ class EncoderDecoderDataset(Dataset):
         Returns: A pait of input and target objects
 
         """
+        seed = torch.random.seed()
         to_tensor_transform = transforms.ToTensor()
 
         # Human image
@@ -69,6 +74,7 @@ class EncoderDecoderDataset(Dataset):
         human_image = to_tensor_transform(human_image)
 
         if self.transform_human:
+            torch.manual_seed(seed)
             human_image = self.transform_human(human_image)
 
         # Pose points
@@ -100,7 +106,9 @@ class EncoderDecoderDataset(Dataset):
         # Clothes
         clothes_image = load_image(self.root, "cloth", self.list_of_clothes_files[idx], "")
         clothes_image = to_tensor_transform(clothes_image)
+
         if self.transform_clothes:
+            torch.manual_seed(seed)
             clothes_image = self.transform_clothes(clothes_image)
 
         # Restored image
@@ -108,15 +116,17 @@ class EncoderDecoderDataset(Dataset):
         human_restored_image = to_tensor_transform(human_restored_image)
 
         if self.transform_human_restored:
+            torch.manual_seed(seed)
             human_restored_image = self.transform_human_restored(human_restored_image)
 
-        if self.pose_points:
-            input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)
-        else:
-            input_ = torch.cat((human_image, clothes_image), axis=0)
-        target = human_restored_image
+        # if self.pose_points:
+        #     input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)
+        # else:
+        #     input_ = torch.cat((human_image, clothes_image), axis=0)
+        # target = human_restored_image
 
-        return input_.float(), target.float()
+        #return input_.float(), target.float()
+        return human_image, clothes_image, human_restored_image
 
     def __len__(self):
         return len(self.list_of_human_no_clothes_files)
