@@ -119,14 +119,14 @@ class EncoderDecoderDataset(Dataset):
             torch.manual_seed(seed)
             human_restored_image = self.transform_human_restored(human_restored_image)
 
-        # if self.pose_points:
-        #     input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)
-        # else:
-        #     input_ = torch.cat((human_image, clothes_image), axis=0)
-        # target = human_restored_image
+        if self.pose_points:
+            input_ = torch.cat((pose_points, human_image, clothes_image), axis=0)
+        else:
+            input_ = torch.cat((human_image, clothes_image), axis=0)
+        target = human_restored_image
 
-        #return input_.float(), target.float()
-        return human_image, clothes_image, human_restored_image
+        return input_.float(), target.float()
+        # return human_image, clothes_image, human_restored_image
 
     def __len__(self):
         return len(self.list_of_human_no_clothes_files)
