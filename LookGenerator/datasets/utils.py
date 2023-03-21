@@ -142,7 +142,7 @@ def save_array_as_image(array: np.array, save_path: str):
         array: a source array
         save_path: path to save an image
     """
-    image = Image.fromarray(array)
+    image = Image.fromarray(array).convert('RGB')
     image.save(save_path)
 
 
