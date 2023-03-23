@@ -194,23 +194,23 @@ class PerceptualLoss(nn.Module):
         self.weight_mse = weight_mse
         self.weights_perceptual = weights_perceptual
 
-    def forward(self, inputs, targets):
+    def forward(self, outputs, targets):
         """
         Args:
-            inputs: reconstructed image, the output of our neural net
+            outputs: reconstructed image, the output of our neural net
             targets: the target image
 
         Returns:
             Sum of MSE losses of different vgg model outputs
         """
-        inputs_vgg, targets_vgg = self.vgg16(inputs), self.vgg16(targets)
+        outputs_vgg, targets_vgg = self.vgg16(outputs), self.vgg16(targets)
 
-        loss_mse = self.weight_mse * self.mse(inputs, targets)
+        loss_mse = self.weight_mse * self.mse(outputs, targets)
 
-        loss_relu1_2 = self.weights_perceptual[0] * self.mse(inputs_vgg['relu1_2'], targets_vgg['relu1_2'].detach())
-        loss_relu2_2 = self.weights_perceptual[1] * self.mse(inputs_vgg['relu2_2'], targets_vgg['relu2_2'].detach())
-        loss_relu3_3 = self.weights_perceptual[2] * self.mse(inputs_vgg['relu3_3'], targets_vgg['relu3_3'].detach())
-        loss_relu4_3 = self.weights_perceptual[3] * self.mse(inputs_vgg['relu4_3'], targets_vgg['relu4_3'].detach())
+        loss_relu1_2 = self.weights_perceptual[0] * self.mse(outputs_vgg['relu1_2'], targets_vgg['relu1_2'].detach())
+        loss_relu2_2 = self.weights_perceptual[1] * self.mse(outputs_vgg['relu2_2'], targets_vgg['relu2_2'].detach())
+        loss_relu3_3 = self.weights_perceptual[2] * self.mse(outputs_vgg['relu3_3'], targets_vgg['relu3_3'].detach())
+        loss_relu4_3 = self.weights_perceptual[3] * self.mse(outputs_vgg['relu4_3'], targets_vgg['relu4_3'].detach())
 
-        loss = loss_mse + loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
+        loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
