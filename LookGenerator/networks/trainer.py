@@ -157,3 +157,110 @@ class Trainer:
         Draws plots of train and validation
         """
         pass
+
+
+class GANTrainer:
+    def __init__(
+            self, generator, discriminator,
+            optimizer_generator,  optimizer_discriminator,
+            criterion, gradient_penalty=None,
+            device='cpu', save_directory_discriminator=r"", save_directory_generator=r"",
+            save_step=1, verbose=True
+    ):
+        self.generator = generator
+        self.discriminator = discriminator
+
+        self.optimizer_generator = optimizer_generator
+        self.optimizer_discriminator = optimizer_discriminator
+
+        self.criterion = criterion
+        device = torch.device(device)
+        self.device = device
+        self.criterion.to(self.device)
+
+        self.gradient_penalty = gradient_penalty
+
+        self.discriminator_fake_history_epochs = []
+        self.discriminator_real_history_epochs = []
+        self.discriminator_history_epochs = []
+        self.generator_history_epochs = []
+
+        self.discriminator_fake_history_batches = []
+        self.discriminator_real_history_batches = []
+        self.discriminator_history_batches = []
+        self.generator_history_batches = []
+
+        self.save_directory_discriminator = save_directory_discriminator
+        self.save_directory_generator = save_directory_generator
+        self.save_step = save_step
+        self.verbose = verbose
+
+    def train(self, train_dataloader, epoch_num=5):
+        """
+        Train function
+        Args:
+            train_dataloader: dataloader for training
+            epoch_num: number of epoch for training and validation
+        """
+        start = datetime.datetime.now()
+        print("start time", start.strftime("%d-%m-%Y %H:%M"))
+
+        for epoch in range(epoch_num):
+            # Train epoch
+            # train_loss = self._train_epoch(train_dataloader)
+            # self.train_history_epochs.append(train_loss)
+
+            # if self.verbose:
+                # print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.5f}')
+                # now = datetime.datetime.now()
+                # print("Epoch end time", now.strftime("%d-%m-%Y %H:%M"))
+            torch.cuda.empty_cache()
+
+            # Save
+            # TODO: make a new method to save models
+            if self.save_step == 0 or self.save_directory_discriminator == "" or self.save_directory_generator == "":
+                continue
+
+            if (epoch + 1) % self.save_step == 0:
+                save_model(
+                    self.discriminator.to('cpu'),
+                    path=f"{self.save_directory_discriminator}\\discriminator_epoch_{self._epoch_string(epoch, epoch_num)}.pt"
+                )
+                save_model(
+                    self.generator.to('cpu'),
+                    path=f"{self.save_directory_generator}\\generator_epoch_{self._epoch_string(epoch, epoch_num)}.pt"
+                )
+
+        now = datetime.datetime.now()
+        print("end time", now.strftime("%d-%m-%Y %H:%M"))
+        print("delta", now - start)
+
+    def _train_epoch(self, train_dataloader):
+        pass
+
+    @staticmethod
+    def _epoch_string(epoch, epoch_num):
+        """
+        Method to create a string form of current epoch number, using the same number
+        of digits for every training session
+
+        Args:
+            epoch: number of current epoch
+            epoch_num: number of epochs for this training session
+
+        Returns: converted to string epoch number
+
+        """
+        num_digits_epoch_num = get_num_digits(epoch_num)
+        num_digits_epoch = get_num_digits(epoch)
+
+        epoch_string = "0"*(num_digits_epoch_num - num_digits_epoch) + str(epoch)
+        return epoch_string
+
+    def draw_history_plots(self, ):
+        """
+        Draws plots of train and validation
+        """
+        pass
+
+
