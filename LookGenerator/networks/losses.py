@@ -1,4 +1,4 @@
-from typing import Dict
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -217,9 +217,43 @@ class PerceptualLoss(nn.Module):
 
 
 class WassersteinLoss(nn.Module):
+    """
+    Wasserstein loss is a loss for discriminator and generator of generative adversarial network
+    """
     def __init__(self):
         super(WassersteinLoss, self).__init__()
 
     def forward(self, outputs, targets):
         return -torch.mean(targets * outputs)
 
+
+class GradientPenalty(nn.Module):
+    """
+    Gradient Penalty for Wasserstein loss
+    """
+    def __init__(self, discriminator, device):
+        """
+        Returns:
+            discriminator: discriminator network for prediction on image interpolation
+            device: computing device
+        """
+        super(GradientPenalty, self).__init__()
+
+        self.discriminator = discriminator.to(device)
+        self.device = device
+
+    def forward(self, fake_image, real_image):
+        t = torch.full(real_image.shape, np.random.rand(1)[0]).to(self.device)
+        interpolation = t * real_image + (1 - t) * fake_image
+        interpolation.requires_grad_()
+
+        predicts = self.discriminator(interpolation)
+        grads = torch.autograd.grad(
+            outputs=predicts, inputs=interpolation,
+            grad_outputs=torch.ones_like(predicts),
+            create_graph=True, retain_graph=True, only_inputs=True
+        )[0]
+
+        gradient_penalty = torch.pow(grads.norm(2, dim=1) - 1, 2).mean()
+
+        return gradient_penalty
