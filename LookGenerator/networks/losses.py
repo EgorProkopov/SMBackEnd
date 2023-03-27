@@ -214,3 +214,12 @@ class PerceptualLoss(nn.Module):
 
         loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
+
+
+class WassersteinLoss(nn.Module):
+    def __init__(self):
+        super(WassersteinLoss, self).__init__()
+
+    def forward(self, outputs, targets):
+        return -torch.mean(targets * outputs)
+
