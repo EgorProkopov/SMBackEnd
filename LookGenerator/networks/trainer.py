@@ -163,9 +163,9 @@ class GANTrainer:
     def __init__(
             self, generator, discriminator,
             optimizer_generator,  optimizer_discriminator,
-            criterion, gradient_penalty=None,
-            device='cpu', save_directory_discriminator=r"", save_directory_generator=r"",
-            save_step=1, verbose=True
+            criterion_generator, criterion_discriminator, gradient_penalty=None, gp_weight = 0.2,
+            save_step=1, save_directory_discriminator=r"", save_directory_generator=r"",
+            device='cpu', verbose=True
     ):
         self.generator = generator
         self.discriminator = discriminator
@@ -173,12 +173,15 @@ class GANTrainer:
         self.optimizer_generator = optimizer_generator
         self.optimizer_discriminator = optimizer_discriminator
 
-        self.criterion = criterion
+        self.criterion_generator = criterion_generator
+        self.criterion_discriminator = criterion_discriminator
         device = torch.device(device)
         self.device = device
-        self.criterion.to(self.device)
+        self.criterion_generator.to(self.device)
+        self.criterion_discriminator.to(self.device)
 
         self.gradient_penalty = gradient_penalty
+        self.gp_weight = gp_weight
 
         self.discriminator_fake_history_epochs = []
         self.discriminator_real_history_epochs = []
@@ -236,7 +239,60 @@ class GANTrainer:
         print("delta", now - start)
 
     def _train_epoch(self, train_dataloader):
-        pass
+        for iteration, input_images, real_images in enumerate(tqdm(train_dataloader)):
+            pass
+
+    def _train_discriminator(self, input_images, real_images):
+        # Clear discriminator gradients
+        self.optimizer_discriminator.zero_grad()
+
+        # Move batch to device
+        real_images = real_images.to(self.device)
+
+        # Pass real images through discriminator
+        real_preds = self.discriminator(real_images)
+        real_targets = torch.ones(real_images.shape[0], 1, device=self.device)
+        real_loss = self.criterion_discriminator(real_preds, real_targets)
+        # TODO: save loss
+
+        # Generate fake images
+        fake_images = self.generator(input_images)
+
+        # Pass fake images through discriminator
+        fake_targets = -torch.ones(fake_images.shape[0], 1, device=self.device)
+        fake_preds = self.discriminator(fake_images)
+        fake_loss = self.criterion_discriminator(fake_preds, fake_targets)
+        # TODO: save loss
+
+        # Loss computation
+        loss_discriminator = real_loss + fake_loss
+        if self.gradient_penalty:
+            gp = self.gradient_penalty(fake_images, real_images)
+            loss_discriminator += self.gp_weight * gp
+
+        # Update discriminator weights
+        loss_discriminator.backward()
+        self.optimizer_discriminator.step()
+        # TODO: save loss
+
+    def _train_generator(self, input_images, real_images):
+        # Clear generator gradients
+        self.optimizer_generator.zero_grad()
+
+        # Generate fake images
+        fake_images = self.generator(input_images)
+
+        # Try to fool discriminator
+        preds = self.discriminator(fake_images)
+        targets = torch.ones(real_images.shape[0], 1, device=self.device)
+        loss_g = self.criterion_generator(preds, targets)
+        # TODO: save loss
+
+        # Update generator weights
+        loss_g.backward()
+        self.optimizer_generator.step()
+
+        # TODO: test it
 
     @staticmethod
     def _epoch_string(epoch, epoch_num):
