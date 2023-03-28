@@ -263,8 +263,6 @@ class WGAN_GPTrainer:
 
         return loss_real, loss_fake, loss_d, loss_g
 
-
-
     def _train_discriminator(self, input_images, real_images):
         # Clear discriminator gradients
         self.optimizer_discriminator.zero_grad()
