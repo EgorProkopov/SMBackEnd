@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import datetime
 from tqdm import tqdm
 
@@ -153,11 +154,16 @@ class Trainer:
         epoch_string = "0"*(num_digits_epoch_num - num_digits_epoch) + str(epoch)
         return epoch_string
 
-    def draw_history_plots(self, ):
+    def draw_history_plots(self, epochs=True):
         """
         Draws plots of train and validation
+
+        Args:
+            epochs: TODO: if 'True', draws history plots by epochs, else by batches
         """
-        pass
+        plt.plot(self.train_history_epochs, label="train")
+        plt.plot(self.val_history_epochs, label="val")
+        plt.show()
 
 
 class WGAN_GPTrainer:
