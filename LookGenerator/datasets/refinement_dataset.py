@@ -98,7 +98,7 @@ class RefinementDiscriminatorDataset(Dataset):
 
         else:
             input_image = transform_to_tensor(load_image(
-                self.fake_images_dir, "", self.list_of_fake[idx], ""
+                self.fake_images_dir, "", self.list_of_fake[idx - len(self.list_of_real)], ""
             ))
 
             if self.transform:
