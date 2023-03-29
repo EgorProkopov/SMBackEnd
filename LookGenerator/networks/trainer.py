@@ -161,12 +161,17 @@ class Trainer:
         Args:
             epochs: TODO: if 'True', draws history plots by epochs, else by batches
         """
-        plt.plot(self.train_history_epochs, label="train")
-        plt.plot(self.val_history_epochs, label="val")
-        plt.show()
+        if epochs:
+            plt.plot(self.train_history_epochs, label="train")
+            plt.plot(self.val_history_epochs, label="val")
+            plt.show()
+        else:
+            plt.plot(self.train_history_batches, label="train")
+            plt.plot(self.val_history_batches, label="val")
+            plt.show()
 
 
-class WGAN_GPTrainer:
+class WGANGPTrainer:
     def __init__(
             self, generator, discriminator,
             optimizer_generator,  optimizer_discriminator,
