@@ -39,7 +39,7 @@ class RefinementDiscriminator(nn.Module):
                 out_channels=8,
                 batch_norm=False,
                 activation_func=nn.ReLU(),
-                res_conn=True
+                res_conn=False
             ),
             nn.Conv2d(
                 in_channels=8,
@@ -56,7 +56,7 @@ class RefinementDiscriminator(nn.Module):
                 out_channels=16,
                 batch_norm=False,
                 activation_func=nn.ReLU(),
-                res_conn=True
+                res_conn=False
             ),
             nn.Conv2d(
                 in_channels=16,
@@ -73,7 +73,7 @@ class RefinementDiscriminator(nn.Module):
                 out_channels=32,
                 batch_norm=False,
                 activation_func=nn.ReLU(),
-                res_conn=True
+                res_conn=False
             ),
             nn.Conv2d(
                 in_channels=32,
@@ -90,7 +90,7 @@ class RefinementDiscriminator(nn.Module):
                 out_channels=64,
                 batch_norm=False,
                 activation_func=nn.ReLU(),
-                res_conn=True
+                res_conn=False
             ),
             nn.Conv2d(
                 in_channels=64,
@@ -107,7 +107,7 @@ class RefinementDiscriminator(nn.Module):
                 out_channels=128,
                 batch_norm=False,
                 activation_func=nn.ReLU(),
-                res_conn=True
+                res_conn=False
             ),
             nn.Conv2d(
                 in_channels=128,
