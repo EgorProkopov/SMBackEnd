@@ -118,14 +118,15 @@ class RefinementDiscriminator(nn.Module):
                 bias=False
             ),
             # output size: 8x8x6
+
+            nn.Flatten()
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=8*6*6, out_features=1)
+            nn.Linear(in_features=8*8*6, out_features=1)
         )
 
     def forward(self, x):
         out = self.features(x)
-        out = torch.reshape(out, (out.shape[0], 8*6*6))
         out = self.classifier(out)
         return out
