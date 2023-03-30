@@ -135,7 +135,7 @@ class Conv7x7(nn.Module):
         self.net = nn.Sequential(
             Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=activation_func, bias=bias),
-            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=activation_func, bias=bias),
             Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=None, bias=bias)

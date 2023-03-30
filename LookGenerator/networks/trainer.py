@@ -179,16 +179,18 @@ class WGANGPTrainer:
             save_step=1, save_directory_discriminator=r"", save_directory_generator=r"",
             device='cpu', verbose=True
     ):
-        self.generator = generator
-        self.discriminator = discriminator
+        device = torch.device(device)
+        self.device = device
+
+        self.generator = generator.to(self.device)
+        self.discriminator = discriminator.to(self.device)
 
         self.optimizer_generator = optimizer_generator
         self.optimizer_discriminator = optimizer_discriminator
 
         self.criterion_generator = criterion_generator
         self.criterion_discriminator = criterion_discriminator
-        device = torch.device(device)
-        self.device = device
+
         self.criterion_generator.to(self.device)
         self.criterion_discriminator.to(self.device)
 
@@ -222,11 +224,12 @@ class WGANGPTrainer:
 
         for epoch in range(epoch_num):
             # Train epoch
+
             loss_real, loss_fake, loss_d, loss_g = self._train_epoch(train_dataloader)
 
             if self.verbose:
                 print(f'Epoch {epoch} of {epoch_num - 1}, discriminator loss: {loss_d:.5f}')
-                print(f'Epoch {epoch} of {epoch_num - 1}, discriminator loss: {loss_g:.5f}')
+                print(f'Epoch {epoch} of {epoch_num - 1}, generator loss: {loss_g:.5f}')
                 now = datetime.datetime.now()
                 print("Epoch end time", now.strftime("%d-%m-%Y %H:%M"))
 
@@ -256,7 +259,13 @@ class WGANGPTrainer:
         self.discriminator_fake_epoch_batches_loss = []
         self.discriminator_epoch_batches_loss = []
         self.generator_epoch_batches_loss = []
-        for iteration, input_images, real_images in enumerate(tqdm(train_dataloader)):
+
+        self.generator = self.generator.to(self.device)
+        self.discriminator = self.discriminator.to(self.device)
+
+        for iteration, (input_images, real_images) in enumerate(tqdm(train_dataloader), 0):
+            input_images = input_images.to(self.device)
+            real_images = real_images.to(self.device)
             self._train_discriminator(input_images, real_images)
 
             if iteration % 5 == 0:
