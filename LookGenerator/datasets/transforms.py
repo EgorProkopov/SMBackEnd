@@ -5,7 +5,7 @@ class MinMaxScale(object):
     """
     Min-Max scale transform
 
-    data_transformed = (data - data_min) / (data_max - data_min)
+    data_transformed = (2*data - data_max - data_min) / (data_max - data_min)
     """
     def __init__(self):
         self.min = 0
@@ -16,12 +16,13 @@ class MinMaxScale(object):
         self.max = image.max()
 
         min_tensor = torch.full(image.shape, self.min)
+        max_tensor = torch.full(image.shape, self.max)
         if self.max - self.min == 0:
             self.max = 1e-10
             self.min = 0
             # raise ZeroDivisionError
 
-        image = (image - min_tensor) / (self.max - self.min)
+        image = (2*image - max_tensor - min_tensor) / (self.max - self.min)
         return image
 
 
