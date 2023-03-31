@@ -108,12 +108,12 @@ class PersonDataset(Dataset):
     def __len__(self):
         return len(self.__get_files_list__())
 
-    def change_background(self, idx, layer_to_change: int):
+    def _get_changed_background_image(self, idx, layer_to_change: int):
         result = self.person_dataset.__getitem__(idx)
         mask = self.mask_dataset.__getitem__(idx)
 
         # get resized background
-        background = self.background.__getitem__(random.randint(0, self.background.__len__()),
+        background = self.background.__getitem__(random.randint(0, self.background.__len__() - 1),
                                                  mask.shape[1],
                                                  mask.shape[0])
 
@@ -123,7 +123,7 @@ class PersonDataset(Dataset):
         return result
 
     def __getitem__(self,  idx) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_ = self.person_dataset.__getitem__(self.__get_files_list__()[idx])
+        input_ = self._get_changed_background_image(idx, layer_to_change=0)
         target = self.mask_dataset.__getitem__(self.__get_files_list__()[idx])
 
         to_tensor = ToTensor()
