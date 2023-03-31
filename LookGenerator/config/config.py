@@ -74,6 +74,7 @@ class WeightsConfig(Config):
 class DatasetConfig(Config):
     DATASET_DIR: str
     HOUSE_ROOM_DATASET: str
+    WAY_TO_SAFE: str
 
     def __init__(self, env):
         if not load_env():
