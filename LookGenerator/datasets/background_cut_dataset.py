@@ -117,6 +117,7 @@ class ImageDataset(Dataset):
 
 
 class PersonDataset(Dataset):
+    """ Dataset class for background cutting task"""
     def __init__(self, image_root_dir: str,
                  dir_name_person: str,
                  dir_name_mask: str,
@@ -125,6 +126,21 @@ class PersonDataset(Dataset):
                  transform_input=None,
                  transform_output=None,
                  augment=None):
+        """
+        Args:
+            @param image_root_dir: path to the directory of images
+            @param dir_name_person: the name of the image directory
+            @param dir_name_mask: the name of the mask directory
+                @note so this is mean that your image is located in "image_root_dir/dir_name_person"
+
+            @param background_root_dir: path to the directory of backgrounds
+            @param dir_name_background: the name of the background directory
+                @note so this is mean that your background is located in "background_root_dir/dir_name_background"
+
+            @param transform_input:
+            @param transform_output:
+            @param augment :
+        """
 
         self.person_dataset = ImageDataset(image_root_dir, dir_name_person)
         self.mask_dataset = ImageDataset(image_root_dir, dir_name_mask)
@@ -137,16 +153,27 @@ class PersonDataset(Dataset):
         self.augment = augment
 
         self._files_list = self.mask_dataset.__get_files_list__()
-        # if not all mask files have their own image
-        # [file for file in self.mask_dataset.__get_files_list__() if file in self.person_dataset.__get_files_list__()]
 
     def __get_files_list__(self):
+        """
+        @return: array that contains names of files
+        """
         return self._files_list
 
     def __len__(self):
+        """
+        @return: int that is representing length of names of files
+        """
         return len(self.__get_files_list__())
 
-    def _get_changed_background_image(self, idx, layer_to_change: int):
+    def _get_changed_background_image(self, idx, layer_to_change: int) -> Tuple[np.array, np.array]:
+        """
+        Returning image with changed background
+
+        @param idx: (int)
+        @param layer_to_change: (int) the number of layer that we want to replace with background
+        @return: (np.array)
+        """
         result = self.person_dataset.__getitem__(idx)
         mask = self.mask_dataset.__getitem__(idx)
 
@@ -161,6 +188,10 @@ class PersonDataset(Dataset):
         return result, layer
 
     def __getitem__(self,  idx) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        @param idx: (int)
+        @return: image and its mask
+        """
         input_, target = self._get_changed_background_image(idx, layer_to_change=0)
 
         to_tensor = ToTensor()
