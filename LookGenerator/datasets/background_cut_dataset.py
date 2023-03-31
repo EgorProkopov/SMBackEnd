@@ -3,7 +3,6 @@ import random
 from torchvision.transforms import ToTensor, ToPILImage
 import torch
 import numpy as np
-from LookGenerator.config.config import DatasetConfig, Config
 
 import os
 from typing import Tuple
@@ -14,12 +13,13 @@ from torch.utils.data import Dataset
 
 
 class ImageDataset(Dataset):
-    """ Dataset of images """
+    """ Dataset of images for inner tasks"""
 
     def __init__(self, root_dir: str, dir_name: str):
         """
         Args:
-            img_dir (string) : path to images
+            root_dir (str) : path to images
+            dir_name (str) : images directory name
         """
 
         super().__init__()
@@ -34,7 +34,11 @@ class ImageDataset(Dataset):
     @dispatch(int)
     def __getitem__(self, idx: int) -> np.array:
         """
-        Args: idx: The index of data sample
+        Opening image by index that considered self.names_of_files variable
+
+        Args:
+            idx: The index of data sample
+
         Returns:
             Return np.array that represent image
         """
@@ -48,22 +52,54 @@ class ImageDataset(Dataset):
 
     @dispatch(str)
     def __getitem__(self, name: str) -> np.array:
+        """
+        Opening image by its name.
+
+        Args:
+            name: name of the file
+
+        Returns:
+            Return np.array that represent image
+        """
         input_ = np.array(Image.open(os.path.join(self.root,
                                      name + "." + self._extensions_list[self.__get_files_list__().index(name)])))
         return input_
 
-    @dispatch(str, int, int)
-    def __getitem__(self, name: str, width: int, height: int):
-        return np.array(ToPILImage()(self.__getitem__(name)).resize((width, height)))
-
     @dispatch(int, int, int)
     def __getitem__(self, idx: int, width: int, height: int):
+        """
+        Opening image by index and resizing it to (width, height) size
+
+        Args:
+            name: name of the file
+
+        Returns:
+            Return np.array that represent image
+        """
         return np.array(ToPILImage()(self.__getitem__(idx)).resize((width, height)))
+
+    @dispatch(str, int, int)
+    def __getitem__(self, name: str, width: int, height: int):
+        """
+        Opening image by its name and resizing it to (width, height) size
+
+        Args:
+            name: name of the file
+
+        Returns:
+            Return np.array that represent image
+        """
+        return np.array(ToPILImage()(self.__getitem__(name)).resize((width, height)))
 
     def __get_name__(self, idx):
         """
-        Args: The index of data sample
-        Return: name of file and its extension
+        Returning name of file and its extension
+
+        Args:
+            The index of data sample
+
+        Return:
+            name of file and its extension
         """
         if torch.is_tensor(idx):
             idx = idx.tolist()
