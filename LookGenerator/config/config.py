@@ -45,6 +45,10 @@ class Config:
                 )
             )
 
+    def show_details(self):
+        for field in self.__annotations__:
+            print(field)
+
 
 class WeightsConfig(Config):
     WEIGHTS_URL: str

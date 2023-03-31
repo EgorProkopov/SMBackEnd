@@ -81,16 +81,18 @@ class ImageDataset(Dataset):
 
 
 class PersonDataset(Dataset):
-    def __init__(self, root_dir: str,
+    def __init__(self, image_root_dir: str,
                  dir_name_person: str,
                  dir_name_mask: str,
+                 background_root_dir: str,
+                 dir_name_background: str,
                  transform_input=None,
                  transform_output=None,
                  augment=None):
 
-        self.person_dataset = ImageDataset(root_dir, dir_name_person)
-        self.mask_dataset = ImageDataset(root_dir, dir_name_mask)
-        self.background = ImageDataset(Config.BACKGROUND_DATASET, "Bedroom")
+        self.person_dataset = ImageDataset(image_root_dir, dir_name_person)
+        self.mask_dataset = ImageDataset(image_root_dir, dir_name_mask)
+        self.background = ImageDataset(background_root_dir, dir_name_background)
 
         self.dir_name_person = dir_name_person
         self.dir_name_mask = dir_name_mask
@@ -120,11 +122,10 @@ class PersonDataset(Dataset):
         layer = (mask == layer_to_change)
         result[layer] = background[layer]
 
-        return result
+        return result, layer
 
     def __getitem__(self,  idx) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_ = self._get_changed_background_image(idx, layer_to_change=0)
-        target = self.mask_dataset.__getitem__(self.__get_files_list__()[idx])
+        input_, target = self._get_changed_background_image(idx, layer_to_change=0)
 
         to_tensor = ToTensor()
 
