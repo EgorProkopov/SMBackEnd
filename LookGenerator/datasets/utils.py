@@ -53,9 +53,18 @@ def prepare_image_for_segmentation(image: Image,
     Выдает тензор [новое измерение, количество каналов, ширина, высота] вместе с необходимыми преобразованиями
     (при наличии оных)
     """
-    tensor = torch.tensor(np.asarray(image, dtype=np.float32).T[np.newaxis, ...])
-    tensor = torch.transpose(tensor, 3, 2)
+    tensor = transforms.ToTensor()(image)
+
+    mean0, mean1, mean2 = tensor[0].mean(), tensor[1].mean(), tensor[2].mean()
+    std0, std1, std2 = tensor[0].std(), tensor[1].std(), tensor[2].std()
+
+    tensor = tensor.unsqueeze(0)
     tensor = transform(tensor)
+
+    normalize = transforms.Normalize(mean=[mean0, mean1, mean2],
+                                     std=[std0, std1, std2])
+
+    tensor = normalize(tensor)
 
     return tensor
 
