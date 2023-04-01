@@ -54,17 +54,9 @@ def prepare_image_for_segmentation(image: Image,
     (при наличии оных)
     """
     tensor = transforms.ToTensor()(image)
-
-    mean0, mean1, mean2 = tensor[0].mean(), tensor[1].mean(), tensor[2].mean()
-    std0, std1, std2 = tensor[0].std(), tensor[1].std(), tensor[2].std()
-
     tensor = tensor.unsqueeze(0)
     tensor = transform(tensor)
 
-    normalize = transforms.Normalize(mean=[mean0, mean1, mean2],
-                                     std=[std0, std1, std2])
-
-    tensor = normalize(tensor)
 
     return tensor
 
