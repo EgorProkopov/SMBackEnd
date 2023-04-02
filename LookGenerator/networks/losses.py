@@ -242,12 +242,13 @@ class GradientPenalty(nn.Module):
         self.discriminator = discriminator.to(device)
         self.device = device
 
-    def forward(self, fake_image, real_image):
+    def forward(self, discriminator, fake_image, real_image, device):
+        discriminator = discriminator.to(device)
         t = torch.full(real_image.shape, np.random.rand(1)[0]).to(self.device)
         interpolation = t * real_image + (1 - t) * fake_image
         interpolation.requires_grad_()
 
-        predicts = self.discriminator(interpolation)
+        predicts = discriminator(interpolation)
         grads = torch.autograd.grad(
             outputs=predicts, inputs=interpolation,
             grad_outputs=torch.ones_like(predicts),
