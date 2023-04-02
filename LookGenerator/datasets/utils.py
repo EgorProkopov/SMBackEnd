@@ -34,16 +34,19 @@ def load_image(root_dir: str, dir_name: str, file_name: str, extension: str) -> 
     )
 
 
-def convert_channel(image: Image):
+def convert_channel(image: torch.Tensor):
     return np.asarray(image.convert('L')) / 255
 
 
 def clean_image_by_mask(image, mask):
-    height, width = image.shape[0], image.shape[1]
+    result = torch.clone(image)
+    height, width = image.shape[1], image.shape[2]
     for i in range(height):
         for j in range(width):
-            if mask[i, j] == 1:
-                image[i, j] = [255, 255, 255]
+            if mask[0, i, j] == 1:
+                result[:, i, j] = torch.tensor([1, 1, 1])
+    
+    return result
 
 
 def prepare_image_for_segmentation(image: Image,

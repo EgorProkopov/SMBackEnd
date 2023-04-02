@@ -7,7 +7,7 @@ def save_model(model, path: str):
 
 def load_model(model, path: str):
     model.load_state_dict(torch.load(path))
-    return model
+    return model    
 
 
 def get_num_digits(a):
