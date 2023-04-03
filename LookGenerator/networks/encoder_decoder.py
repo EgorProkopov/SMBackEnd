@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from LookGenerator.networks.losses import IoULoss
+from LookGenerator.networks.losses import IoUMetric
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -151,7 +151,7 @@ def train_encoder_decoder(
     train_history = []
     val_history = []
 
-    criterion = IoULoss()
+    criterion = IoUMetric()
     criterion.to(device)
 
     for epoch in range(epoch_num):

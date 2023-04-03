@@ -20,7 +20,7 @@ class IoUMetric(nn.Module):
 
     """
     def __init__(self, weight=None, size_average=True):
-        super(IoULoss, self).__init__()
+        super(IoUMetric, self).__init__()
 
     def forward(self, inputs, targets, smooth=1):
 
