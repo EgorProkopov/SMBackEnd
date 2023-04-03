@@ -7,7 +7,7 @@ import torch.nn.functional as functional
 import torchvision.models as models
 
 
-class IoULoss(nn.Module):
+class IoUMetric(nn.Module):
     """
     Loss for binary segmentation
 
@@ -38,7 +38,7 @@ class IoULoss(nn.Module):
 
         IoU = (intersection + smooth) / (union + smooth)
 
-        return 1 - IoU
+        return IoU
 
 
 class FocalLoss(nn.Module):
