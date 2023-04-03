@@ -201,6 +201,7 @@ class PerceptualLoss(nn.Module):
         super(PerceptualLoss, self).__init__()
         self.vgg16 = VGG16IntermediateOutputs(device)
         self.L1_loss = PerPixelLoss()
+        self.mse = nn.MSELoss()
         self.weight_per_pixel = weight_per_pixel
         self.weights_perceptual = weights_perceptual
 
