@@ -175,13 +175,23 @@ class VGG16IntermediateOutputs(nn.Module):
 
         return output
 
+class PerPixelLoss(nn.Module):
+    """
+    L1-loss
+    """
+    def __init__(self):
+        super(PerPixelLoss, self).__init__()
+
+    def forward(self, outputs, targets):
+        return torch.mean(torch.abs(targets - outputs))
+
 
 class PerceptualLoss(nn.Module):
     """
     This perceptual loss calculate MSE loss between vgg16 activation maps
     of model output image and target image
     """
-    def __init__(self, device, weight_mse=4.0, weights_perceptual=[1.0, 1.0, 1.0, 1.0]):
+    def __init__(self, device, weight_per_pixel=1.0, weights_perceptual=[1.0, 1.0, 1.0, 1.0]):
         """
         Args:
             device: device on which loss will be calculated
@@ -190,8 +200,8 @@ class PerceptualLoss(nn.Module):
         """
         super(PerceptualLoss, self).__init__()
         self.vgg16 = VGG16IntermediateOutputs(device)
-        self.mse = nn.MSELoss()
-        self.weight_mse = weight_mse
+        self.L1_loss = PerPixelLoss()
+        self.weight_per_pixel = weight_per_pixel
         self.weights_perceptual = weights_perceptual
 
     def forward(self, outputs, targets):
@@ -201,18 +211,18 @@ class PerceptualLoss(nn.Module):
             targets: the target image
 
         Returns:
-            Sum of MSE losses of different vgg model outputs
+            Sum of MSE losses of different vgg model outputs and L1 loss
         """
         outputs_vgg, targets_vgg = self.vgg16(outputs), self.vgg16(targets)
 
-        loss_mse = self.weight_mse * self.mse(outputs, targets)
+        l1_loss = self.weight_per_pixel * self.L1_loss(outputs, targets)
 
         loss_relu1_2 = self.weights_perceptual[0] * self.mse(outputs_vgg['relu1_2'], targets_vgg['relu1_2'].detach())
         loss_relu2_2 = self.weights_perceptual[1] * self.mse(outputs_vgg['relu2_2'], targets_vgg['relu2_2'].detach())
         loss_relu3_3 = self.weights_perceptual[2] * self.mse(outputs_vgg['relu3_3'], targets_vgg['relu3_3'].detach())
         loss_relu4_3 = self.weights_perceptual[3] * self.mse(outputs_vgg['relu4_3'], targets_vgg['relu4_3'].detach())
 
-        loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
+        loss = l1_loss + loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
 
 
