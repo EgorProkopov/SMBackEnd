@@ -269,3 +269,9 @@ class GradientPenalty(nn.Module):
         gradient_penalty = torch.pow(grads.norm(2, dim=1) - 1, 2).mean()
 
         return gradient_penalty
+
+
+class FineGANLoss(nn.Module):
+    def __init__(self):
+        super(FineGANLoss, self).__init__()
+
