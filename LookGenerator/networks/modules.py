@@ -92,6 +92,8 @@ class Conv5x5(nn.Module):
                     activation_func=None, bias=bias)
         )
         self._activation_func = activation_func
+        if self.skip_conn:
+            self.downsample = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1)
 
     def forward(self, x):
         """
@@ -104,7 +106,7 @@ class Conv5x5(nn.Module):
         """
         out = self.net(x)
         if self.skip_conn:
-            shortcut = x
+            shortcut = self.downsample(x)
             out = out + shortcut
 
         if self._activation_func:
@@ -141,6 +143,8 @@ class Conv7x7(nn.Module):
                     activation_func=None, bias=bias)
         )
         self._activation_func = activation_func
+        if self.skip_conn:
+            self.downsample = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1)
 
     def forward(self, x):
         """
@@ -153,7 +157,7 @@ class Conv7x7(nn.Module):
         """
         out = self.net(x)
         if self.skip_conn:
-            shortcut = x
+            shortcut = self.downsample(x)
             out = out + shortcut
 
         if self._activation_func:
