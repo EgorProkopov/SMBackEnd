@@ -195,14 +195,14 @@ class PersonDataset(Dataset):
         input_, target = self._get_changed_background_image(idx, layer_to_change=0)
 
         to_tensor = ToTensor()
-
-        if self.augment:
-            transformed = self.augment(image=input_, mask=target)
-            input_ = transformed['image']
-            target = transformed['mask']
-
         input_ = to_tensor(input_)
         target = to_tensor(target)
+
+        if self.augment:
+            transformed = self.augment(image=input_.detach().numpy(),
+                                       mask=target.detach().numpy())
+            input_ = transformed['image']
+            target = transformed['mask']
 
         if self.transform_input:
             input_ = self.transform_input(input_)
