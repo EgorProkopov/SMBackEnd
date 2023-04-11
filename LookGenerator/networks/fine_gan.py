@@ -7,8 +7,10 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 class EncoderDecoderGenerator(nn.Module):
     """Generator part of the GAN """
 
-    def __init__(self, in_channels=22, out_channels=3):
+    def __init__(self, clothes_feature_extractor, in_channels=6, out_channels=3):
         super(EncoderDecoderGenerator, self).__init__()
+
+        self.clothes_feature_extractor = clothes_feature_extractor
 
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
@@ -21,7 +23,7 @@ class EncoderDecoderGenerator(nn.Module):
         self.conv_module4 = Conv3x3(in_channels=256, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
         self.conv_module5 = Conv3x3(in_channels=512, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
 
-        self.bottle_neck = Conv3x3(in_channels=512, out_channels=512,
+        self.bottle_neck = Conv3x3(in_channels=512 * 2, out_channels=512,
                                    batch_norm=True, activation_func=nn.ReLU())
 
         self.deconv_module1 = nn.UpsamplingNearest2d(scale_factor=2)
@@ -61,6 +63,9 @@ class EncoderDecoderGenerator(nn.Module):
             Tensor of packed decoded human and clothes mask.
             First 3 channels for decoded human
         """
+        self.clothes_feature_extractor.eval()
+        clothes_tensor = x[:, 3:5, :, :]
+
         skip_connections = []
 
         out = self.conv_module1(x)
@@ -83,9 +88,11 @@ class EncoderDecoderGenerator(nn.Module):
         skip_connections.append(out)
         out = self.max_pool(out)
 
+        clothes_features = self.clothes_feature_extractor(clothes_tensor)
+        out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
-        out = self.deconv_module1(out)
+        out = self.deconv_module1()
         out = torch.cat((out, skip_connections[4]), axis=1)
         out = self.deconv_conv_module1(out)
 
