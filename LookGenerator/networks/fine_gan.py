@@ -64,7 +64,7 @@ class EncoderDecoderGenerator(nn.Module):
             First 3 channels for decoded human
         """
         self.clothes_feature_extractor.eval()
-        clothes_tensor = x[:, 3:5, :, :]
+        clothes_tensor = x[:, 3:6, :, :]
 
         skip_connections = []
 
