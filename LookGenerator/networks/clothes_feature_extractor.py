@@ -21,8 +21,8 @@ class ClothingAutoEncoder(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv_module1 = nn.Sequential(
-            Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU()),
-            Conv5x5(in_channels=64, out_channels=64, activation_func=nn.LeakyReLU())
+            Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU(), batch_norm=True),
+            Conv5x5(in_channels=64, out_channels=64, activation_func=nn.LeakyReLU(), batch_norm=True)
         )
 
         self.conv_module2 = Conv3x3(in_channels=64, out_channels=128, batch_norm=True, activation_func=nn.LeakyReLU())
@@ -32,7 +32,7 @@ class ClothingAutoEncoder(nn.Module):
 
         #512 x 8 x 6
         self.bottle_neck = Conv3x3(in_channels=512, out_channels=512,
-                                   batch_norm=True, activation_func=nn.ReLU())
+                                   batch_norm=True, activation_func=nn.LeakyReLU())
         # 512 x 8 x 6
         self.latent_dim = latent_dim
         self.latent_linear = nn.Linear(512 * 8 * 6, self.latent_dim)
@@ -62,11 +62,11 @@ class ClothingAutoEncoder(nn.Module):
 
         self.deconv_conv_module5 = nn.Sequential(
             Conv5x5(in_channels=64, out_channels=32, batch_norm=True, activation_func=nn.ReLU()),
-            Conv5x5(in_channels=32, out_channels=32, batch_norm=True, activation_func=nn.ReLU())
+            Conv5x5(in_channels=32, out_channels=out_channels, batch_norm=True, activation_func=nn.ReLU())
         )
 
-        self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
-                                  batch_norm=True, activation_func=nn.ReLU())
+        # self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
+        #                           batch_norm=True, activation_func=nn.ReLU())
 
         # self.final_conv = nn.Sequential(
         #     nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
@@ -128,7 +128,7 @@ class ClothingAutoEncoder(nn.Module):
         z = self.deconv_module5(z)
         z = self.deconv_conv_module5(z)
 
-        z = self.final_conv(z)
+        #z = self.final_conv(z)
         return z
 
     def forward(self, x):
