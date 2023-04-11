@@ -192,7 +192,7 @@ class PerceptualLoss(nn.Module):
     This perceptual loss calculate MSE loss between vgg16 activation maps
     of model output image and target image
     """
-    def __init__(self, device, weight_per_pixel=4.0, weights_perceptual=[1.0, 1.0, 1.0, 1.0]):
+    def __init__(self, device, weights_perceptual=[1.0, 1.0, 1.0, 1.0]):
         """
         Args:
             device: device on which loss will be calculated
@@ -201,9 +201,7 @@ class PerceptualLoss(nn.Module):
         """
         super(PerceptualLoss, self).__init__()
         self.vgg16 = VGG16IntermediateOutputs(device)
-        self.L1_loss = PerPixelLoss()
         self.mse = nn.MSELoss()
-        self.weight_per_pixel = weight_per_pixel
         self.weights_perceptual = weights_perceptual
 
     def forward(self, outputs, targets):
@@ -217,14 +215,12 @@ class PerceptualLoss(nn.Module):
         """
         outputs_vgg, targets_vgg = self.vgg16(outputs), self.vgg16(targets)
 
-        l1_loss = self.weight_per_pixel * self.L1_loss(outputs, targets)
-
         loss_relu1_2 = self.weights_perceptual[0] * self.mse(outputs_vgg['relu1_2'], targets_vgg['relu1_2'].detach())
         loss_relu2_2 = self.weights_perceptual[1] * self.mse(outputs_vgg['relu2_2'], targets_vgg['relu2_2'].detach())
         loss_relu3_3 = self.weights_perceptual[2] * self.mse(outputs_vgg['relu3_3'], targets_vgg['relu3_3'].detach())
         loss_relu4_3 = self.weights_perceptual[3] * self.mse(outputs_vgg['relu4_3'], targets_vgg['relu4_3'].detach())
 
-        loss = l1_loss + loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
+        loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
 
 
@@ -298,23 +294,26 @@ class FineGANLoss(nn.Module):
         self.adversarial_criterion = adversarial_criterion
         self.adv_loss_weight = adv_loss_weight
 
-        self.l1_criterion = l1_criterion
-        if not l1_criterion:
-            l1_loss_weight = 0
-        self.l1_loss_weight = l1_loss_weight
-
-        self.perceptual = perceptual
-        self.perceptual_loss_weight = perceptual_loss_weight
+        self.l1_criterion = None
+        self.l1_loss_weight = 0
+        if l1_criterion:
+            self.l1_criterion = PerPixelLoss()
+            self.l1_loss_weight = l1_loss_weight
 
         self.perceptual_criterion = None
-
+        self.perceptual_loss_weight = 0
         if perceptual:
-            self.perceptual_criterion = PerceptualLoss(weight_per_pixel=l1_loss_weight, device=device)
-
+            self.perceptual_criterion = PerceptualLoss(device=device)
+            self.perceptual_loss_weight = perceptual_loss_weight
+            
     def forward(self, preds, targets, output_images, real_images):
         adversarial_loss = self.adv_loss_weight * self.adversarial_criterion(preds, targets)
-        if self.perceptual:
+        if self.perceptual_criterion:
             perceptual_loss = self.perceptual_loss_weight * self.perceptual_criterion(output_images, real_images)
-            return adversarial_loss + perceptual_loss
+            adversarial_loss += perceptual_loss
+
+        if self.l1_criterion:
+            l1_loss = self.l1_loss_weight * self.l1_criterion(output_images, real_images)
+            adversarial_loss += l1_loss
 
         return adversarial_loss
