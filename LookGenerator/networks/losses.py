@@ -328,7 +328,7 @@ class VAELoss(nn.Module):
             kld_coeff: coefficient of kl divergence part
             recon_loss: loss to be used in reconstruction part
         """
-        super(VAELoss, self).__init_()
+        super(VAELoss, self).__init__()
 
         self.recon_coeff = recon_coeff
         self.kld_coeff = kld_coeff
@@ -342,6 +342,8 @@ class VAELoss(nn.Module):
         """
 
         loss = torch.mean(- 1 / 2 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
+        if loss > 1000.0 or loss == float('inf') or loss == float('nan'):
+            return 1000.0
         return loss
 
     def _log_likelihood(self, x, reconstruction):

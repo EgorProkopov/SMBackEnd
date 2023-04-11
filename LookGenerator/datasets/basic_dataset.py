@@ -6,7 +6,6 @@ import numpy as np
 
 import os
 from typing import Tuple
-from multipledispatch import dispatch
 
 from PIL import Image
 from torch.utils.data import Dataset
@@ -44,7 +43,7 @@ class BasicDataset(Dataset):
         input_ = load_image(self.root_dir,
                             self.dir_name,
                             self._files_list[idx],
-                            self._extensions_list[idx])
+                            '.' + self._extensions_list[idx])
         input_ = to_tensor(input_)
 
         if self.transform_input:
