@@ -144,4 +144,4 @@ class ClothingAutoEncoder(nn.Module):
         z = self._sampler(mu, log_var)
         out = self._decode(z)
 
-        return out
+        return out, mu, log_var

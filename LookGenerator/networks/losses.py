@@ -317,3 +317,44 @@ class FineGANLoss(nn.Module):
             adversarial_loss += l1_loss
 
         return adversarial_loss
+
+
+class VAELoss(nn.Module):
+    def __init__(self, recon_coeff=1, kld_coeff=0.5, recon_loss=nn.MSELoss()):
+        """
+
+        Args:
+            recon_coeff: coefficient of reconstruction part
+            kld_coeff: coefficient of kl divergence part
+            recon_loss: loss to be used in reconstruction part
+        """
+        super(VAELoss, self).__init_()
+
+        self.recon_coeff = recon_coeff
+        self.kld_coeff = kld_coeff
+        self.recon_loss = recon_loss
+
+    def _kl_divergence(self, mu, log_var):
+        """
+        Args:
+            mu:
+            log_var:
+        """
+
+        loss = torch.mean(- 1 / 2 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
+        return loss
+
+    def _log_likelihood(self, x, reconstruction):
+        """
+        Args:
+            x:
+            reconstruction:
+        """
+        loss = self.recon_loss
+
+        return loss(reconstruction, x)
+
+    def forward(self, x, mu, log_var, reconstruction):
+        kld = self._kl_divergence(mu, log_var)
+        recon = self._log_likelihood(x, reconstruction)
+        return self.recon_coeff * recon + self.kld_coeff * kld
