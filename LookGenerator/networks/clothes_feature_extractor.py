@@ -101,6 +101,13 @@ class ClothingAutoEncoder(nn.Module):
         eps = torch.distributions.Normal(0, 1).sample()
         return std * eps + mu
 
+    def extract_features(self, x):
+        mu, log_var = self._encode(x)
+        sample = self._sampler(mu, log_var)
+        features = self.decode_input(sample)
+        features = torch.reshape(features, (-1, 512, 8, 6))
+        return features
+
     def _decode(self, z):
         z = self.decode_input(z)
         z = torch.reshape(z, (-1, 512, 8, 6))
