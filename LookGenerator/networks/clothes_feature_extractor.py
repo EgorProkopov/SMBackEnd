@@ -21,8 +21,8 @@ class ClothingAutoEncoder(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv_module1 = nn.Sequential(
-            Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU()),
-            Conv5x5(in_channels=64, out_channels=64, activation_func=nn.LeakyReLU())
+            Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU(), batch_norm=True),
+            Conv5x5(in_channels=64, out_channels=64, activation_func=nn.LeakyReLU(), batch_norm=True)
         )
 
         self.conv_module2 = Conv3x3(in_channels=64, out_channels=128, batch_norm=True, activation_func=nn.LeakyReLU())
@@ -32,7 +32,7 @@ class ClothingAutoEncoder(nn.Module):
 
         #512 x 8 x 6
         self.bottle_neck = Conv3x3(in_channels=512, out_channels=512,
-                                   batch_norm=True, activation_func=nn.ReLU())
+                                   batch_norm=True, activation_func=nn.LeakyReLU())
         # 512 x 8 x 6
         self.latent_dim = latent_dim
 
@@ -61,11 +61,11 @@ class ClothingAutoEncoder(nn.Module):
 
         self.deconv_conv_module5 = nn.Sequential(
             Conv5x5(in_channels=64, out_channels=32, batch_norm=True, activation_func=nn.ReLU()),
-            Conv5x5(in_channels=32, out_channels=32, batch_norm=True, activation_func=nn.ReLU())
+            Conv5x5(in_channels=32, out_channels=3, batch_norm=True, activation_func=nn.ReLU())
         )
 
-        self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
-                                  batch_norm=True, activation_func=nn.ReLU())
+        # self.final_conv = Conv3x3(in_channels=32, out_channels=out_channels,
+        #                           batch_norm=True, activation_func=nn.ReLU())
 
         # self.final_conv = nn.Sequential(
         #     nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
@@ -109,26 +109,26 @@ class ClothingAutoEncoder(nn.Module):
         return features
 
     def _decode(self, z):
-        z = self.decode_input(z)
-        z = torch.reshape(z, (-1, 512, 8, 6))
+        out = self.decode_input(z)
+        out = torch.reshape(out, (-1, 512, 8, 6))
 
-        z = self.deconv_module1(z)
-        z = self.deconv_conv_module1(z)
+        out = self.deconv_module1(out)
+        out = self.deconv_conv_module1(out)
 
-        z = self.deconv_module2(z)
-        z = self.deconv_conv_module2(z)
+        out = self.deconv_module2(out)
+        out = self.deconv_conv_module2(out)
 
-        z = self.deconv_module3(z)
-        z = self.deconv_conv_module3(z)
+        out = self.deconv_module3(out)
+        out = self.deconv_conv_module3(out)
 
-        z = self.deconv_module4(z)
-        z = self.deconv_conv_module4(z)
+        out = self.deconv_module4(out)
+        out = self.deconv_conv_module4(out)
 
-        z = self.deconv_module5(z)
-        z = self.deconv_conv_module5(z)
+        out = self.deconv_module5(out)
+        out = self.deconv_conv_module5(out)
 
-        z = self.final_conv(z)
-        return z
+        # z = self.final_conv(z)
+        return out
 
     def forward(self, x):
         """
