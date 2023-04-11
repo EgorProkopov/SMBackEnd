@@ -185,7 +185,7 @@ class PersonDataset(Dataset):
         layer = (mask == layer_to_change)
         result[layer] = background[layer]
 
-        return result, layer
+        return result, layer.astype(int)
 
     def __getitem__(self,  idx) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -196,18 +196,18 @@ class PersonDataset(Dataset):
 
         to_tensor = ToTensor()
 
+
         if self.augment:
-            transformed = self.augment(image=input_, mask=target)
+            transformed = self.augment(image=input_,
+                                       mask=target)
             input_ = transformed['image']
             target = transformed['mask']
-
         input_ = to_tensor(input_)
         target = to_tensor(target)
-
         if self.transform_input:
             input_ = self.transform_input(input_)
 
         if self.transform_output:
-            input_ = self.transform_output(target)
+            target = self.transform_output(target)
 
         return input_, target
