@@ -196,12 +196,12 @@ class PersonDataset(Dataset):
 
         to_tensor = ToTensor()
 
+
         if self.augment:
             transformed = self.augment(image=input_,
                                        mask=target)
             input_ = transformed['image']
             target = transformed['mask']
-
         input_ = to_tensor(input_)
         target = to_tensor(target)
         if self.transform_input:
