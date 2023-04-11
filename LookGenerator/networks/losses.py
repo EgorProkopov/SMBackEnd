@@ -305,7 +305,7 @@ class FineGANLoss(nn.Module):
         if perceptual:
             self.perceptual_criterion = PerceptualLoss(device=device)
             self.perceptual_loss_weight = perceptual_loss_weight
-            
+
     def forward(self, preds, targets, output_images, real_images):
         adversarial_loss = self.adv_loss_weight * self.adversarial_criterion(preds, targets)
         if self.perceptual_criterion:
