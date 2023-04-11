@@ -35,6 +35,7 @@ class ClothingAutoEncoder(nn.Module):
                                    batch_norm=True, activation_func=nn.ReLU())
         # 512 x 8 x 6
         self.latent_dim = latent_dim
+        self.latent_linear = nn.Linear(512 * 8 * 6, self.latent_dim)
 
         self.mu = nn.Linear(512 * 8 * 6, self.latent_dim)
         self.log_var = nn.Linear(512 * 8 * 6, self.latent_dim)
@@ -89,12 +90,12 @@ class ClothingAutoEncoder(nn.Module):
 
         x = self.bottle_neck(x)
 
-        x = torch.flatten(x, start_dim=1)
+        x = self.latent_linear(x)
 
-        mu = self.mu(x)
-        log_var = self.log_var(x)
+        # mu = self.mu(x)
+        # log_var = self.log_var(x)
 
-        return mu, log_var
+        return x
 
     def _sampler(self, mu, log_var):
         std = torch.exp(0.5 * log_var)
@@ -140,8 +141,10 @@ class ClothingAutoEncoder(nn.Module):
             Tensor of packed decoded human and clothes mask.
             First 3 channels for decoded human
         """
-        mu, log_var = self._encode(x)
-        z = self._sampler(mu, log_var)
-        out = self._decode(z)
+        #mu, log_var = self._encode(x)
+        #z = self._sampler(mu, log_var)
 
-        return out, mu, log_var
+        to_decoder = self._encode(x)
+        out = self._decode(to_decoder)
+
+        return out
