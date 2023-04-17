@@ -59,7 +59,7 @@ def load_models(weights_dir: str) -> Dict:
 
 
 
-def process_image(human_image: Image, clothes_image: Image, models: Dict )-> Image:
+def process_image(human_image: Image, clothes_image: Image, models: Dict, upscale=True)-> Image:
 
     """
         Params:
@@ -99,31 +99,41 @@ def process_image(human_image: Image, clothes_image: Image, models: Dict )-> Ima
 
     segmented = models["segmentation"](human)
     segmented = transform_segmented(segmented)
-    save_image(segmented, "/home/ondrey/Coding/SmartMirror/image/segmented.jpg")
     
     without_body = clean_image_by_mask(human.squeeze(0), segmented.squeeze(0))
-
-    save_image(without_body, "/home/ondrey/Coding/SmartMirror/image/without_body.jpg")
-
     
 
     clothes = transform_clothes(clothes_image)
 
-    save_image(clothes, "/home/ondrey/Coding/SmartMirror/image/clothes_in.jpg")
 
     encoder_decoder_input = torch.cat((without_body.unsqueeze(0), clothes.unsqueeze(0)), axis=1)
 
     encoded_image = models["encoder_decoder"](encoder_decoder_input)
 
-    save_image(encoded_image, "/home/ondrey/Coding/SmartMirror/image/encoded.jpg")
-
-    super_resoltion, _ = models["unsampler"].enhance(encoded_image.squeeze(0).permute(1, 2, 0).detach().numpy())
-
-    result_image = to_image_from_decoder(torch.tensor(super_resoltion.transpose(2, 0, 1)).unsqueeze(0))
+    if upscale:
+        super_resoltion, _ = models["unsampler"].enhance(encoded_image.squeeze(0).permute(1, 2, 0).detach().numpy())
+        result_image = to_image_from_decoder(torch.tensor(super_resoltion.transpose(2, 0, 1)).unsqueeze(0))
+    else:
+        result_image = encoded_image
 
     return result_image
     
 
 
     
-    
+
+def process_images_in_folder(model, image_folder: str,  clothes_folder: str, dist: str): 
+    human_image_list = os.listdir(image_folder)
+    clothes_list = os.listdir(clothes_folder)
+
+    for human_path in human_image_list:
+        for clothes_path in clothes_list:
+            human_image = Image.open(os.path.join(image_folder, human_path))
+            clothes_image = Image.open(os.path.join(clothes_folder, clothes_path))
+            
+            processed_image = process_image(human_image=human_image, clothes_image=clothes_image, model=model)
+            dist_dir = os.path.join(dist, f"{human_path.split('.')[0]}_{clothes_path.split('.')[0]}")
+            os.mkdir(dist_dir)
+            human_image.save(os.path.join(dist_dir, "human.jpg"))
+            clothes_image.save(os.path.join(dist_dir, "clothes.jpg"))
+            processed_image.save(os.path.join(dist_dir, "human.jpg"))
