@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -84,11 +85,13 @@ class Conv5x5(nn.Module):
             res_conn: if 'True', then adds residual connection through layers in this module
         """
         super(Conv5x5, self).__init__()
-        self.skip_conn = res_conn
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.res_conn = res_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+            Conv3x3(self.in_channels, self.out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=activation_func, bias=bias),
-            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
+            Conv3x3(self.out_channels, self.out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=None, bias=bias)
         )
         self._activation_func = activation_func
@@ -103,8 +106,12 @@ class Conv5x5(nn.Module):
             Result of network working
         """
         out = self.net(x)
-        if self.skip_conn:
+        if self.res_conn:
             shortcut = x
+            additional_channels = torch.zeros((
+                shortcut.shape[0], self.out_channels - self.in_channels, shortcut.shape[2], shortcut.shape[3]
+            ))
+            shortcut = torch.cat((shortcut, additional_channels), dim=1)
             out = out + shortcut
 
         if self._activation_func:
@@ -119,7 +126,7 @@ class Conv7x7(nn.Module):
     Have optional Dropout and BatchNorm layers after every conv layer and optional residual connection.
     """
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, activation_func=None, bias=True, skip_conn=False):
+                 dropout=False, batch_norm=False, activation_func=None, bias=True, res_conn=False):
         """
         Args:
             in_channels: Number of channels in the input image
@@ -131,7 +138,9 @@ class Conv7x7(nn.Module):
         """
         # res_conn == skip_conn ?
         super(Conv7x7, self).__init__()
-        self.skip_conn = skip_conn
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.res_conn = res_conn
         self.net = nn.Sequential(
             Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
                     activation_func=activation_func, bias=bias),
@@ -152,8 +161,12 @@ class Conv7x7(nn.Module):
             Result of network working
         """
         out = self.net(x)
-        if self.skip_conn:
+        if self.res_conn:
             shortcut = x
+            additional_channels = torch.zeros((
+                shortcut.shape[0], self.out_channels - self.in_channels, shortcut.shape[2], shortcut.shape[3]
+            ))
+            shortcut = torch.cat((shortcut, additional_channels), dim=1)
             out = out + shortcut
 
         if self._activation_func:
