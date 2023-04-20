@@ -1,5 +1,4 @@
 import torch
-import torchvision.transforms as transforms
 
 
 class MinMaxScale(object):
@@ -40,32 +39,6 @@ class ThresholdTransform(object):
             image: image to be transformed
         """
         return (image >= self.threshold).float()
-
-
-class Normalize(object):
-    """OUR normalization"""
-    def __init__(self):
-        self.mean = None
-        self.std = None
-
-    def __call__(self, tensor: torch.Tensor):
-        batched = True if len(tensor.size()) == 4 else False
-
-        if not batched:
-            self.mean = [tensor[0].mean(), tensor[1].mean(), tensor[2].mean()]
-            self.std = [tensor[0].std(), tensor[1].std(), tensor[2].std()]
-
-        else:
-            self.mean = [tensor[0,0].mean(), tensor[0, 1].mean(), tensor[0, 2].mean()]
-            self.std = [tensor[0, 0].std(), tensor[0, 1].std(), tensor[0, 2].std()]
-
-        normalize = transforms.Normalize(mean=self.mean,
-                                         std=self.std)
-
-        tensor = normalize(tensor)
-        
-
-        return tensor
 
 
 class DividerScaler(object):

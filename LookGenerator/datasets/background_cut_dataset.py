@@ -196,7 +196,6 @@ class PersonDataset(Dataset):
 
         to_tensor = ToTensor()
 
-
         if self.augment:
             transformed = self.augment(image=input_,
                                        mask=target)

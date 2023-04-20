@@ -1,12 +1,9 @@
 import os
-
-import numpy as np
 import torch
 import torchvision.transforms as transforms
 
-from typing import Tuple
 from torch.utils.data import Dataset
-from LookGenerator.datasets.utils import load_image, convert_channel
+from LookGenerator.datasets.utils import load_image
 
 
 class EncoderDecoderDataset(Dataset):
@@ -58,7 +55,7 @@ class EncoderDecoderDataset(Dataset):
         self.list_of_clothes_files = list_of_clothes_files
         self.list_of_human_image_files = list_of_human_image_files
 
-    def __getitem__(self, idx): #-> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx):
         """
         Args:
             idx: The index of data sample
@@ -91,11 +88,11 @@ class EncoderDecoderDataset(Dataset):
             pose_points_list = [file.split('.')[0] for file in points_list]
 
             for pose_point in pose_points_list:
-                point = convert_channel(load_image(
-                                                self.root,
-                                                os.path.join("posePoints", self.list_of_pose_points_files[idx]),
-                                                pose_point,
-                                                ".png"))
+                point = load_image(
+                    self.root,
+                    os.path.join("posePoints", self.list_of_pose_points_files[idx]),
+                    pose_point,
+                    ".png").convert('L')
                 point = to_tensor_transform(point)
 
                 if self.transform_pose_points:

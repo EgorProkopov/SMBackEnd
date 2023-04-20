@@ -10,5 +10,5 @@ class PoseNetDataset(Dataset):
         self.root = image_dir
         self.transform = transform
 
-    def __getitem__(idx):
+    def __getitem__(self, idx):
         return 0

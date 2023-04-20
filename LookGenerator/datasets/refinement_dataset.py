@@ -1,12 +1,10 @@
 import os
 
-import numpy as np
 import torch
 import torchvision.transforms as transforms
 
-from typing import Tuple
 from torch.utils.data import Dataset
-from LookGenerator.datasets.utils import load_image, convert_channel
+from LookGenerator.datasets.utils import load_image
 
 
 class RefinementGANDataset(Dataset):

@@ -1,15 +1,6 @@
-import random
-
-from torchvision.transforms import ToTensor, ToPILImage
-import torch
-import numpy as np
-
+from torchvision.transforms import ToTensor
 import os
-from typing import Tuple
-
-from PIL import Image
 from torch.utils.data import Dataset
-
 from LookGenerator.datasets.utils import load_image
 
 

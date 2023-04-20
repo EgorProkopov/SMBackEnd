@@ -5,11 +5,13 @@ import os
 from typing import Tuple
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-from LookGenerator.datasets.utils import load_image, convert_channel
+from LookGenerator.datasets.utils import load_image
 
 
 class PersonSegmentationDatasetMultichannel(Dataset):
     """
+    DEPRECATED
+
     Dataset for a Person Segmentation task, uses multichannel mask
     Might be deprecated soon
     """
@@ -56,11 +58,11 @@ class PersonSegmentationDatasetMultichannel(Dataset):
 
         channel_files_list = [file.split('.')[0] for file in channel_list]
 
-        for channel in channel_files_list:
-            target.append(convert_channel(load_image(self.root,
-                                                     os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
-                                                     channel,
-                                                     ".png")))
+        # for channel in channel_files_list:
+        #     target.append(convert_channel(load_image(self.root,
+        #                                              os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
+        #                                              channel,
+        #                                              ".png")))
 
         if self.augment:
             transformed = self.augment(image=input_, masks=target)
