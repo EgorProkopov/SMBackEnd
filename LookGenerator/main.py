@@ -1,4 +1,3 @@
-'''
 
 from LookGenerator.datasets.utils import prepare_image_for_segmentation, clean_image_by_mask, to_image_from_decoder
 
@@ -140,4 +139,3 @@ def process_images_in_folder(model, image_folder: str,  clothes_folder: str, dis
             clothes_image.save(os.path.join(dist_dir, "clothes.jpg"))
             processed_image.save(os.path.join(dist_dir, "human.jpg"))
 
-'''
