@@ -5,7 +5,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
-from LookGenerator.networks.losses import FocalLoss
+from LookGenerator.networks.losses import FocalLossBin
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
@@ -119,7 +119,7 @@ def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu',
     train_history = []
     val_history = []
 
-    criterion = FocalLoss()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
+    criterion = FocalLossBin()  # + DiceLoss() # nn.BCELoss() # nn.CrossEntropyLoss()  # IoULoss
     criterion.to(device)
 
     for epoch in range(epoch_num):
