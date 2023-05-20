@@ -126,7 +126,7 @@ class PersonSegmentationDataset(Dataset):
         to_tensor = ToTensor()
 
         input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
-        target = np.array(load_image(self.root, "mask", self._files_list[idx], ".png"))
+        target = np.array(load_image(self.root, "agnostic-v3.3", self._files_list[idx], ".png"))
 
         if self.augment:
             transformed = self.augment(image=input_, mask=target)
