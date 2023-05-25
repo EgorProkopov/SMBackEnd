@@ -7,7 +7,7 @@ from LookGenerator.networks.utils import save_model
 
 class ClothingAutoEncoder(nn.Module):
     """Model of encoder-decoder part of virtual try-on model"""
-
+    # TODO: написать ввод кол-ва карт активаций в аргументах
     def __init__(self, in_channels=3, out_channels=3, latent_dim=512):
         """
 
@@ -72,7 +72,7 @@ class ClothingAutoEncoder(nn.Module):
         #     nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
         #     nn.Sigmoid()
         # )
-    def _encode(self, x):
+    def encode(self, x):
         x = self.conv_module1(x)
         x = self.max_pool(x)
 
@@ -103,7 +103,7 @@ class ClothingAutoEncoder(nn.Module):
         return std * eps + mu
 
     def extract_features(self, x):
-        mu, log_var = self._encode(x)
+        mu, log_var = self.encode(x)
         sample = self._sampler(mu, log_var)
         features = self.decode_input(sample)
         features = torch.reshape(features, (-1, 512, 8, 6))
@@ -144,7 +144,7 @@ class ClothingAutoEncoder(nn.Module):
         #mu, log_var = self._encode(x)
         #z = self._sampler(mu, log_var)
 
-        to_decoder = self._encode(x)
+        to_decoder = self.encode(x)
         out = self._decode(to_decoder)
 
         return out

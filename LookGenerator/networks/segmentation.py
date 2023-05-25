@@ -10,6 +10,7 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
 
+# TODO: если работает мультикласс, обновить юнетку в modules
 class UNet(nn.Module):
     """
     UNet model for segmentation with changeable number of layers
@@ -56,7 +57,7 @@ class UNet(nn.Module):
             # Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
             nn.Conv2d(features[0], out_channels, kernel_size=1)
         )
-        self.sigmoid = nn.Sigmoid()  # - откомментить, если используется самописная функция активации
+        self.softmax = nn.Softmax()  # - откомментить, если используется самописная функция активации
 
     def forward(self, x):
         """
@@ -88,7 +89,7 @@ class UNet(nn.Module):
             x = self.ups[i + 1](concat_skip)
 
         out = self.classifier(x)
-        out = self.sigmoid(out)
+        out = self.softmax(out)
 
         return out
     
