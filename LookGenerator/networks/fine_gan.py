@@ -7,7 +7,7 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 class EncoderDecoderGenerator(nn.Module):
     """Generator part of the GAN """
 
-    def __init__(self, clothes_feature_extractor, in_channels=6, out_channels=3):
+    def __init__(self, clothes_feature_extractor, in_channels=3, out_channels=3):
         super(EncoderDecoderGenerator, self).__init__()
 
         self.clothes_feature_extractor = clothes_feature_extractor
@@ -88,7 +88,7 @@ class EncoderDecoderGenerator(nn.Module):
         skip_connections.append(out)
         out = self.max_pool(out)
 
-        clothes_features = self.clothes_feature_extractor(clothes_tensor)
+        clothes_features = self.clothes_feature_extractor.encode(clothes_tensor)
         out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
