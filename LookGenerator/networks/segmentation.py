@@ -57,7 +57,7 @@ class UNet(nn.Module):
             # Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
             nn.Conv2d(features[0], out_channels, kernel_size=1)
         )
-        self.softmax = nn.Softmax()  # - откомментить, если используется самописная функция активации
+        self.softmax = nn.Softmax(dim=1)  # - откомментить, если используется самописная функция активации
 
     def forward(self, x):
         """

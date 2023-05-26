@@ -56,12 +56,13 @@ class FocalLossBin(nn.Module):
 
 
 class FocalLossMulti(nn.Module):
-    def __init__(self, alpha=0.5, gamma=2, smooth=1, reduction='mean'):
+    def __init__(self, alpha=0.5, gamma=2, smooth=1, reduction='mean', device='cpu'):
         super(FocalLossMulti, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
         self.smooth = smooth
         self.reduction = reduction
+        self.device = device
 
         self.focal_loss_bin = FocalLossBin(
             alpha=self.alpha,
@@ -73,20 +74,18 @@ class FocalLossMulti(nn.Module):
         targets = targets.float()
         batch_size, num_labels = outputs.size(0), outputs.size(1)
 
-        bin_losses = []
+        cum_loss = torch.Tensor([0]).to(self.device)
 
         for label in range(num_labels):
             output_channel = outputs[:][label]
             target_channel = targets[:][label]
 
-            bin_loss = self.focal_loss_bin(output_channel, target_channel)
-            bin_losses.append(bin_loss)
+            cum_loss += self.focal_loss_bin(output_channel, target_channel)
 
-        bin_losses = torch.Tensor(bin_losses)
         if self.reduction == 'sum':
-            focal_loss = torch.sum(bin_losses)
-        if self.reduction == 'mean':
-            focal_loss = torch.mean(bin_losses)
+            focal_loss = cum_loss
+        elif self.reduction == 'mean':
+            focal_loss = cum_loss / num_labels
 
         return focal_loss
 
