@@ -4,7 +4,7 @@ import os
 
 from typing import Tuple
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, Resize
 from LookGenerator.datasets.utils import load_image
 
 
@@ -50,7 +50,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         to_tensor = ToTensor()
 
         input_ = load_image(self.root, "image", self._files_list[idx], ".jpg")
-        target = []
+        target = torch.tensor([])
 
         channel_list = os.listdir(os.path.join(
             self.root,
@@ -61,22 +61,21 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         channel_files_list = [file.split('.')[0] for file in channel_list]
 
         for channel in channel_files_list:
-            target.append(to_tensor((load_image(self.root,
-                                                os.path.join("image-parse-v3-multichannel",
-                                                             self._files_list[idx]),
-                                                channel,
-                                                ".png"))))
+            part = to_tensor((load_image(self.root,
+                                         os.path.join("image-parse-v3-multichannel",
+                                                      self._files_list[idx]),
+                                         channel,
+                                         ".png")))
+            if self.transform_output:
+                torch.manual_seed(seed)
+                part = self.transform_output(part)
+            target = torch.cat((target, part), axis=0)
 
         input_ = to_tensor(input_)
-        target = to_tensor(target)
 
         if self.transform_input:
             torch.manual_seed(seed)
             input_ = self.transform_input(input_)
-
-        if self.transform_mask:
-            torch.manual_seed(seed)
-            target = self.transform_mask(target)
 
         return input_.float(), target.float()
 
