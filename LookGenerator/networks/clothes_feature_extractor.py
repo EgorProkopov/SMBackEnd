@@ -148,3 +148,106 @@ class ClothingAutoEncoder(nn.Module):
         out = self._decode(to_decoder)
 
         return out
+
+
+class ClothAutoencoder(nn.Module):
+    """
+    Autoencoder for cloth with changeable layers number and size
+    """
+    def __init__(
+            self,
+            in_channels=3,
+            out_channels=3,
+            features=(8, 16, 32, 64),
+            latent_dim_size=128,
+            encoder_activation_func=nn.LeakyReLU(),
+            decoder_activation_func=nn.ReLU()
+    ):
+        """
+
+        Args:
+            in_channels: number of input channels
+            out_channels: number of output channels
+            features: tuple of encoding layers number and size
+            latent_dim_size: size of latent dim
+            encoder_activation_func: activation function for encoder layers
+            decoder_activation_func: activation function for decoder layers
+        """
+        super(ClothAutoencoder, self).__init__()
+
+        self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.upsampling = nn.UpsamplingNearest2d(scale_factor=2)
+
+        self.encoder = nn.ModuleList()
+        self.decoder = nn.ModuleList()
+
+        # Encoder
+        for feature in features:
+            self.encoder.append(
+                Conv3x3(
+                    in_channels, feature,
+                    batch_norm=True, dropout=False,
+                    activation_func=encoder_activation_func
+                ))
+            in_channels = feature
+            self.encoder.append(self.max_pool)
+
+        self.bottle_neck = Conv3x3(
+            in_channels=in_channels,
+            out_channels=latent_dim_size
+        )
+        in_channels = latent_dim_size
+
+        # Decoder
+        for feature in reversed(features):
+            self.decoder.append(
+                Conv3x3(
+                    in_channels=in_channels,
+                    out_channels=feature,
+                    batch_norm=True, dropout=False,
+                    activation_func=decoder_activation_func
+                )
+            )
+            self.decoder.append(self.upsampling)
+            in_channels = feature
+
+        self.final_conv = Conv3x3(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            batch_norm=True,
+            dropout=False,
+            activation_func=nn.Sigmoid()
+        )
+
+    def encode(self, x):
+        """
+
+        Encoding of input image
+
+        Args:
+            x: input image
+
+        Returns: encoded image
+
+        """
+        out = self.encoder(x)
+        out = self.bottle_neck(out)
+        return out
+
+    def decode(self, z):
+        """
+        Decoding of encoded image or noise (latent space embedding)
+        Args:
+            z: embedding from latent space
+
+        Returns: decoded image
+
+        """
+        out = self.decoder(z)
+        out = self.final_conv(out)
+        return out
+
+    def forward(self, x):
+        z = self.encode(x)
+        out = self.decode(z)
+        return out
