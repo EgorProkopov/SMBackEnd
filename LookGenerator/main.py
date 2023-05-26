@@ -1,5 +1,5 @@
 
-from LookGenerator.datasets.utils import prepare_image_for_segmentation, clean_image_by_mask, to_image_from_decoder
+from LookGenerator.datasets.utils import prepare_image_for_segmentation, clean_image_by_mask
 
 import torch
 from torchvision import transforms

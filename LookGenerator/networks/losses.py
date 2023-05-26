@@ -42,13 +42,13 @@ class FocalLossBin(nn.Module):
         self.gamma = gamma
         self.smooth = smooth
 
-    def forward(self, inputs, targets):
-        inputs = inputs.view(-1)
+    def forward(self, outputs, targets):
+        outputs = outputs.view(-1)
         targets = targets.view(-1)
 
         criterion = nn.BCELoss(reduction='mean')
 
-        bce = criterion(inputs, targets)
+        bce = criterion(outputs, targets)
         bce_exp = torch.exp(-bce)
         focal_loss = self.alpha * (1 - bce_exp) ** self.gamma * bce
 
@@ -56,28 +56,54 @@ class FocalLossBin(nn.Module):
 
 
 class FocalLossMulti(nn.Module):
-    def __init__(self, alpha=0.5, gamma=2, reduction='mean'):
+    def __init__(self, alpha=0.5, gamma=2, smooth=1, reduction='mean'):
         super(FocalLossMulti, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
+        self.smooth = smooth
         self.reduction = reduction
 
-    def forward(self, inputs, targets):
+        self.focal_loss_bin = FocalLossBin(
+            alpha=self.alpha,
+            gamma=self.gamma,
+            smooth=self.smooth
+        )
+
+    def forward(self, outputs, targets):
         targets = targets.float()
-        batch_size, num_classes = inputs.size(0), inputs.size(1)
-        inputs = inputs.view(batch_size, num_classes, -1)
-        targets = targets.view(batch_size, -1)
+        batch_size, num_labels = outputs.size(0), outputs.size(1)
 
-        ce_loss = functional.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
-        pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        bin_losses = []
 
+        for label in range(num_labels):
+            output_channel = outputs[:][label]
+            target_channel = targets[:][label]
+
+            bin_loss = self.focal_loss_bin(output_channel, target_channel)
+            bin_losses.append(bin_loss)
+
+        bin_losses = torch.Tensor(bin_losses)
+        if self.reduction == 'sum':
+            focal_loss = torch.sum(bin_losses)
         if self.reduction == 'mean':
-            focal_loss = torch.mean(focal_loss)
-        elif self.reduction == 'sum':
-            focal_loss = torch.sum(focal_loss)
+            focal_loss = torch.mean(bin_losses)
 
         return focal_loss
+
+
+        # inputs = inputs.view(batch_size, num_classes, -1)
+        # targets = targets.view(batch_size, -1)
+        #
+        # ce_loss = functional.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
+        # pt = torch.exp(-ce_loss)
+        # focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        #
+        # if self.reduction == 'mean':
+        #     focal_loss = torch.mean(focal_loss)
+        # elif self.reduction == 'sum':
+        #     focal_loss = torch.sum(focal_loss)
+        #
+        # return focal_loss
 
 
 class DiceLossBin(nn.Module):
