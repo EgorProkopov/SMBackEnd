@@ -14,8 +14,7 @@ class MinMaxScale(object):
     def __call__(self, image):
         self.min = image.min()
         self.max = image.max()
-
-        min_tensor = torch.full(image.shape, self.min)
+        min_tensor = torch.full(image.shape, self.min.item())
         if (self.max - self.min) == 0:
             self.max = 1e-10
             self.min = 0
