@@ -178,19 +178,19 @@ class ClothAutoencoder(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.upsampling = nn.UpsamplingNearest2d(scale_factor=2)
 
-        self.encoder = nn.ModuleList()
-        self.decoder = nn.ModuleList()
+        self.encoder_layers = nn.ModuleList()
+        self.decoder_layers = nn.ModuleList()
 
         # Encoder
         for feature in features:
-            self.encoder.append(
+            self.encoder_layers.append(
                 Conv3x3(
                     in_channels, feature,
                     batch_norm=True, dropout=False,
                     activation_func=encoder_activation_func
                 ))
             in_channels = feature
-            self.encoder.append(self.max_pool)
+            self.encoder_layers.append(self.max_pool)
 
         self.bottle_neck = Conv3x3(
             in_channels=in_channels,
@@ -200,7 +200,7 @@ class ClothAutoencoder(nn.Module):
 
         # Decoder
         for feature in reversed(features):
-            self.decoder.append(
+            self.decoder_layers.append(
                 Conv3x3(
                     in_channels=in_channels,
                     out_channels=feature,
@@ -208,7 +208,7 @@ class ClothAutoencoder(nn.Module):
                     activation_func=decoder_activation_func
                 )
             )
-            self.decoder.append(self.upsampling)
+            self.decoder_layers.append(self.upsampling)
             in_channels = feature
 
         self.final_conv = Conv3x3(
@@ -230,8 +230,11 @@ class ClothAutoencoder(nn.Module):
         Returns: encoded image
 
         """
-        out = self.encoder(x)
-        out = self.bottle_neck(out)
+
+        for layer in self.encoder_layers:
+            x = layer(x)
+
+        out = self.bottle_neck(x)
         return out
 
     def decode(self, z):
@@ -243,9 +246,12 @@ class ClothAutoencoder(nn.Module):
         Returns: decoded image
 
         """
-        out = self.decoder(z)
-        out = self.final_conv(out)
-        return out
+
+        for layer in self.decoder_layers:
+            z = layer(z)
+
+        out = self.final_conv(z)
+        return z
 
     def forward(self, x):
         z = self.encode(x)
