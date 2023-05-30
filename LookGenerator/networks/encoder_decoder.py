@@ -130,3 +130,7 @@ class EncoderDecoder(nn.Module):
         out = self.sigmoid(out)
 
         return out
+
+    def __str__(self):
+        description = f"Encoder-decoder: \n\tbase model \nAutoencoder: \n\t{str(self.clothes_feature_extractor)}"
+        return description
