@@ -170,6 +170,11 @@ class Trainer:
             plt.plot(self.val_history_batches, label="val")
             plt.show()
 
+    def __str__(self):
+        description = f"Model:\n\t{str(self.model)}\n" \
+                      f"Criterion: \n\t{str(type(self.criterion))}\n" \
+                      f"Optimizer: \n\t{str(type(self.optimizer))}"
+        return description
 
 class GANTrainer:
     def __init__(
