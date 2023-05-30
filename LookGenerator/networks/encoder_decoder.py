@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
 
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
@@ -69,8 +70,9 @@ class EncoderDecoder(nn.Module):
 
         self.clothes_feature_extractor.eval()
         clothes_tensor = x[:, 3:6, :, :]
+        out = x[:, 0:3, :, :]
 
-        out = self.conv_module1(x)
+        out = self.conv_module1(out)
         skip_connections.append(out)
         out = self.max_pool(out)
 
@@ -91,6 +93,8 @@ class EncoderDecoder(nn.Module):
         out = self.max_pool(out)
 
         clothes_features = self.clothes_feature_extractor.encode(clothes_tensor)
+        clothes_features = transforms.functional.resize(clothes_features, size=out.shape[3:])
+
         out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
@@ -117,84 +121,3 @@ class EncoderDecoder(nn.Module):
         out = self.final_conv(out)
 
         return out
-    
-    
-    @staticmethod
-    def load():
-        pass
-
-
-def train_encoder_decoder(
-        model,
-        train_dataloader,
-        val_dataloader,
-        optimizer,
-        device='cpu',
-        epoch_num=5,
-        save_directory=None
-):
-    """
-    DEPRECATED
-
-    Method for training and validation encoder-decoder
-    Args:
-        save_directory:
-        model:
-        train_dataloader:
-        val_dataloader:
-        optimizer:
-        device:
-        epoch_num:
-
-    DEPRECATED
-    """
-
-    device = torch.device(device)
-
-    train_history = []
-    val_history = []
-
-    criterion = IoULoss()
-    criterion.to(device)
-
-    for epoch in range(epoch_num):
-        model = model.to(device)
-
-        train_running_loss = 0.0
-        model.train()
-
-        for data, targets in train_dataloader:
-            data = data.to(device)
-            targets = targets.to(device)
-
-            outputs = model(data)
-
-            optimizer.zero_grad()
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
-            train_running_loss += loss.item()
-
-        train_loss = train_running_loss / len(train_dataloader)
-        train_history.append(train_loss)
-        print(f'Epoch {epoch} of {epoch_num - 1}, train loss: {train_loss:.3f}')
-        torch.cuda.empty_cache()
-
-        val_running_loss = 0.0
-        model.eval()
-        for data, targets in val_dataloader:
-            data = data.to(device)
-            targets = targets.to(device)
-
-            outputs = model(data)
-            loss = criterion(outputs, targets)
-            val_running_loss += loss.item()
-
-        val_loss = val_running_loss / len(val_dataloader)
-        val_history.append(val_loss)
-        print(f'Epoch {epoch} of {epoch_num - 1}, val loss: {val_loss:.3f}')
-        torch.cuda.empty_cache()
-
-        save_model(model.to('cpu'), path=f"{save_directory}\\encoder_decoder_epoch_{epoch}_{val_loss:.3f}.pt")
-
-    return train_history, val_history
