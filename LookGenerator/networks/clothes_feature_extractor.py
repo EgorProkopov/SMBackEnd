@@ -175,6 +175,9 @@ class ClothAutoencoder(nn.Module):
         """
         super(ClothAutoencoder, self).__init__()
 
+        self.features = features
+        self.latent_dim_size = latent_dim_size
+
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.upsampling = nn.UpsamplingNearest2d(scale_factor=2)
 
@@ -257,3 +260,9 @@ class ClothAutoencoder(nn.Module):
         z = self.encode(x)
         out = self.decode(z)
         return out
+
+    def __str__(self):
+        features_str = str(self.features)
+        latent_size_str = str(self.latent_dim_size)
+
+        return "features: " + features_str + ", " + "latent_size: " + latent_size_str
