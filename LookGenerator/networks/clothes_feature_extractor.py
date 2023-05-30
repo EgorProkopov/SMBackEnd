@@ -251,7 +251,7 @@ class ClothAutoencoder(nn.Module):
             z = layer(z)
 
         out = self.final_conv(z)
-        return z
+        return out
 
     def forward(self, x):
         z = self.encode(x)
