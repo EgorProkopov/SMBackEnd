@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
 
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 
@@ -11,9 +12,10 @@ class EncoderDecoderGenerator(nn.Module):
         """
 
         Args:
-            clothes_feature_extractor: clothes feature
-            in_channels:
-            out_channels:
+            clothes_feature_extractor: clothes feature extractor for this generation model,
+            must be pretrained
+            in_channels: input image channels num
+            out_channels: output image channels num
         """
         super(EncoderDecoderGenerator, self).__init__()
 
@@ -56,9 +58,9 @@ class EncoderDecoderGenerator(nn.Module):
         )
 
         self.final_conv = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1)
         )
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         """
@@ -72,10 +74,11 @@ class EncoderDecoderGenerator(nn.Module):
         """
         self.clothes_feature_extractor.eval()
         clothes_tensor = x[:, 3:6, :, :]
+        out = x[:, 0:3, :, :]
 
         skip_connections = []
 
-        out = self.conv_module1(x)
+        out = self.conv_module1(out)
         skip_connections.append(out)
         out = self.max_pool(out)
 
@@ -96,6 +99,8 @@ class EncoderDecoderGenerator(nn.Module):
         out = self.max_pool(out)
 
         clothes_features = self.clothes_feature_extractor.encode(clothes_tensor)
+        clothes_features = transforms.functional.resize(clothes_features, size=out.shape[3:])
+
         out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
@@ -120,6 +125,7 @@ class EncoderDecoderGenerator(nn.Module):
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
+        out = self.sigmoid(out)
 
         return out
 
