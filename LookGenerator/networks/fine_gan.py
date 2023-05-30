@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
 
 from LookGenerator.networks.modules import Conv3x3, Conv5x5
 
@@ -8,6 +9,14 @@ class EncoderDecoderGenerator(nn.Module):
     """Generator part of the GAN """
 
     def __init__(self, clothes_feature_extractor, in_channels=3, out_channels=3):
+        """
+
+        Args:
+            clothes_feature_extractor: clothes feature extractor for this generation model,
+            must be pretrained
+            in_channels: input image channels num
+            out_channels: output image channels num
+        """
         super(EncoderDecoderGenerator, self).__init__()
 
         self.clothes_feature_extractor = clothes_feature_extractor
@@ -23,35 +32,35 @@ class EncoderDecoderGenerator(nn.Module):
         self.conv_module4 = Conv3x3(in_channels=256, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
         self.conv_module5 = Conv3x3(in_channels=512, out_channels=512, batch_norm=True, activation_func=nn.LeakyReLU())
 
-        self.bottle_neck = Conv3x3(in_channels=512 * 2, out_channels=512,
-                                   batch_norm=True, activation_func=nn.ReLU())
+        self.bottle_neck = Conv3x3(in_channels=512 + self.clothes_feature_extractor.latent_dim_size, out_channels=512,
+                                   batch_norm=True, activation_func=nn.LeakyReLU())
 
         self.deconv_module1 = nn.UpsamplingNearest2d(scale_factor=2)
         self.deconv_conv_module1 = Conv3x3(in_channels=512 * 2, out_channels=512,
-                                           batch_norm=True, activation_func=nn.ReLU())
+                                           batch_norm=True, activation_func=nn.LeakyReLU())
 
         self.deconv_module2 = nn.UpsamplingNearest2d(scale_factor=2)
         self.deconv_conv_module2 = Conv3x3(in_channels=512 * 2, out_channels=256,
-                                           batch_norm=True, activation_func=nn.ReLU())
+                                           batch_norm=True, activation_func=nn.LeakyReLU())
 
         self.deconv_module3 = nn.UpsamplingNearest2d(scale_factor=2)
         self.deconv_conv_module3 = Conv3x3(in_channels=256 * 2, out_channels=128,
-                                           batch_norm=True, activation_func=nn.ReLU())
+                                           batch_norm=True, activation_func=nn.LeakyReLU())
 
         self.deconv_module4 = nn.UpsamplingNearest2d(scale_factor=2)
         self.deconv_conv_module4 = Conv3x3(in_channels=128 * 2, out_channels=64,
-                                           batch_norm=True, activation_func=nn.ReLU())
+                                           batch_norm=True, activation_func=nn.LeakyReLU())
 
         self.deconv_module5 = nn.UpsamplingNearest2d(scale_factor=2)
 
         self.deconv_conv_module5 = nn.Sequential(
-            Conv5x5(in_channels=64 * 2, out_channels=32, batch_norm=True, activation_func=nn.ReLU(), res_conn=True)
+            Conv5x5(in_channels=64 * 2, out_channels=32, batch_norm=True, activation_func=nn.LeakyReLU(), res_conn=True)
         )
 
         self.final_conv = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1)
         )
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         """
@@ -65,10 +74,11 @@ class EncoderDecoderGenerator(nn.Module):
         """
         self.clothes_feature_extractor.eval()
         clothes_tensor = x[:, 3:6, :, :]
+        out = x[:, 0:3, :, :]
 
         skip_connections = []
 
-        out = self.conv_module1(x)
+        out = self.conv_module1(out)
         skip_connections.append(out)
         out = self.max_pool(out)
 
@@ -89,6 +99,8 @@ class EncoderDecoderGenerator(nn.Module):
         out = self.max_pool(out)
 
         clothes_features = self.clothes_feature_extractor.encode(clothes_tensor)
+        clothes_features = transforms.functional.resize(clothes_features, size=out.shape[3:])
+
         out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
@@ -113,6 +125,7 @@ class EncoderDecoderGenerator(nn.Module):
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
+        out = self.sigmoid(out)
 
         return out
 
