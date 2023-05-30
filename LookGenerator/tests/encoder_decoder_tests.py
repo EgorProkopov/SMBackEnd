@@ -1,22 +1,25 @@
+from PIL import Image
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
-from PIL import Image
-from pathlib import Path
+import torch
+
+from LookGenerator.networks.clothes_feature_extractor import ClothAutoencoder
 from LookGenerator.networks.encoder_decoder import EncoderDecoder
 
 
 def test_output_shape():
-    input_ = Image.open(Path("test_data_samples/image.jpg"))
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Resize((256, 192))
-    ])
-    input_ = transform(input_)[None, :]
+    input_ = torch.ones((1, 6, 256, 192))
 
     out_channels = 3
-
-    model = EncoderDecoder(in_channels=3, out_channels=out_channels)
+    clothes_autoencoder = ClothAutoencoder()
+    model = EncoderDecoder(
+        clothes_feature_extractor=clothes_autoencoder,
+        in_channels=3,
+        out_channels=out_channels
+    )
     output = model(input_)
     plt.imshow(output.detach().numpy()[0, 0, :, :])
     plt.show()
@@ -25,7 +28,8 @@ def test_output_shape():
     plt.imshow(output.detach().numpy()[0, 2, :, :])
     plt.show()
     print(output.shape)
-    assert output.shape == (1, out_channels, 256, 192)
+    assert output.shape == (1, out_channels, 256, 192), "Test 1 Failed"
+    print("Test 1 Complete")
 
 
 if __name__ == "__main__":
