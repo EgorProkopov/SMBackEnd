@@ -9,6 +9,14 @@ from LookGenerator.networks.utils import save_model
 class EncoderDecoder(nn.Module):
     """Model of encoder-decoder part of virtual try-on model"""
     def __init__(self, clothes_feature_extractor, in_channels=22, out_channels=3):
+        """
+
+        Args:
+            clothes_feature_extractor: clothes feature extractor for this generation model,
+            must be pretrained
+            in_channels: input image channels num
+            out_channels: output image channels num
+        """
         super(EncoderDecoder, self).__init__()
 
         self.clothes_feature_extractor = clothes_feature_extractor
@@ -52,9 +60,9 @@ class EncoderDecoder(nn.Module):
         )
 
         self.final_conv = nn.Sequential(
-            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1)
         )
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         """
@@ -119,5 +127,6 @@ class EncoderDecoder(nn.Module):
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
+        out = self.sigmoid(out)
 
         return out
