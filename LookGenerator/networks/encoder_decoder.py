@@ -24,7 +24,7 @@ class EncoderDecoder(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv_module1 = nn.Sequential(
-            Conv5x5(in_channels=in_channels, out_channels=64, activation_func=nn.LeakyReLU()),
+            Conv5x5(in_channels=3, out_channels=64, activation_func=nn.LeakyReLU()),
             Conv5x5(in_channels=64, out_channels=64, activation_func=nn.LeakyReLU())
         )
 

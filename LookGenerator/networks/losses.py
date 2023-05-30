@@ -172,7 +172,7 @@ class VGG16IntermediateOutputs(nn.Module):
         self.vgg_layers = vgg16_model.features
 
         self.layer_name_mapping = layer_name_mapping
-        if self.layer_name_mapping:
+        if not self.layer_name_mapping:
             self.layer_name_mapping = {
                 '3': "relu1_2",
                 '8': "relu2_2",
