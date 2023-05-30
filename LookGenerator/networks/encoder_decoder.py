@@ -8,7 +8,7 @@ from LookGenerator.networks.utils import save_model
 
 class EncoderDecoder(nn.Module):
     """Model of encoder-decoder part of virtual try-on model"""
-    def __init__(self, clothes_feature_extractor, in_channels=22, out_channels=3):
+    def __init__(self, clothes_feature_extractor, in_channels=6, out_channels=3):
         """
 
         Args:
