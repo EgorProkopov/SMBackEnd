@@ -97,6 +97,7 @@ class Trainer:
         for data, targets in tqdm(train_dataloader):
             data = data.to(self.device)
             targets = targets.to(self.device)
+            print(type(targets))
             outputs = self.model(data)
 
             self.optimizer.zero_grad()

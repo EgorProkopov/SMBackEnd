@@ -27,12 +27,12 @@ def train_bpgm(dataloader, model, device='cpu', epochs=1):
             for key in data:
                 data[key] = data[key].to(device)
 
-            shirt = data['shirt']
+            shirt = data['shirt'].to(device)
             shirt_mask = data['shirt_mask'].to(device)
             warped_shirt = data['warped_shirt'].to(device)
             cwm = data['torso'].to(device)
             mask = data['segmentation'].to(device)
-            shirt = shirt.to(device)
+
             grid = model(mask, shirt)
 
             warped = F.grid_sample(shirt, grid, padding_mode='border', align_corners=True)

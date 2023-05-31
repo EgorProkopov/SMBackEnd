@@ -79,11 +79,12 @@ class FeatureRegression(nn.Module):
 
         
 class TpsGridGen(nn.Module):
-    def __init__(self, out_h=256, out_w=192, use_regular_grid=True, grid_size=3, reg_factor=0):
+    def __init__(self, out_h=256, out_w=192, use_regular_grid=True, grid_size=3, reg_factor=0, device='cpu'):
         super(TpsGridGen, self).__init__()
         self.out_h, self.out_w = out_h, out_w
         self.reg_factor = reg_factor
-        self.use_cuda = use_cuda
+        self.device = device
+        # self.use_cuda = use_cuda
 
         # create grid in numpy
         self.grid = np.zeros( [self.out_h, self.out_w, 3], dtype=np.float32)
@@ -93,8 +94,8 @@ class TpsGridGen(nn.Module):
         self.grid_X = torch.FloatTensor(self.grid_X).unsqueeze(0).unsqueeze(3)
         self.grid_Y = torch.FloatTensor(self.grid_Y).unsqueeze(0).unsqueeze(3)
         # if use_cuda:
-        #     self.grid_X = self.grid_X.cuda()
-        #     self.grid_Y = self.grid_Y.cuda()
+        self.grid_X = self.grid_X.to(self.device)
+        self.grid_Y = self.grid_Y.to(self.device)
 
         # initialize regular grid for control points P_i
         if use_regular_grid:
@@ -110,11 +111,11 @@ class TpsGridGen(nn.Module):
             self.Li = self.compute_L_inverse(P_X,P_Y).unsqueeze(0)
             self.P_X = P_X.unsqueeze(2).unsqueeze(3).unsqueeze(4).transpose(0,4)
             self.P_Y = P_Y.unsqueeze(2).unsqueeze(3).unsqueeze(4).transpose(0,4)
-            # if use_cuda:
-            #     self.P_X = self.P_X.cuda()
-            #     self.P_Y = self.P_Y.cuda()
-            #     self.P_X_base = self.P_X_base.cuda()
-            #     self.P_Y_base = self.P_Y_base.cuda()
+
+            self.P_X = self.P_X.to(self.device)
+            self.P_Y = self.P_Y.to(self.device)
+            self.P_X_base = self.P_X_base.to(self.device)
+            self.P_Y_base = self.P_Y_base.to(self.device)
 
     def forward(self, theta):
         warped_grid = self.apply_transformation(theta,torch.cat((self.grid_X,self.grid_Y),3))
@@ -135,14 +136,14 @@ class TpsGridGen(nn.Module):
         P = torch.cat((O,X,Y),1)
         L = torch.cat((torch.cat((K,P),1),torch.cat((P.transpose(0,1),Z),1)),0)
         Li = torch.inverse(L)
-        if self.use_cuda:
-            Li = Li.cuda()
-        return Li
+        # if self.use_cuda:
+        #     Li = Li.cuda()
+        return Li.to(self.device)
         
     def apply_transformation(self,theta,points):
         orig_device = theta.device
-        if self.use_cuda:
-            theta = theta.to("cuda:0")
+        # if self.use_cuda:
+        #     theta = theta.to("cuda:0")
         if theta.dim()==2:
             theta = theta.unsqueeze(2).unsqueeze(3)
         # points should be in the [B,H,W,2] format,
@@ -258,9 +259,9 @@ class Vgg19(nn.Module):
 class BPGM(nn.Module):
     """ Geometric Matching Module
     """
-    def __init__(self, in_channels=12):
+    def __init__(self, in_channels=12, device='cpu'):
         super(BPGM, self).__init__()
-
+        self.device = device
         n_layers = int(math.log(256, 2)) - 5
         self.resolution = (256, 192)
             
@@ -272,13 +273,13 @@ class BPGM(nn.Module):
         
         ngf = 2 ** (3 - n_layers) * 64
         
-        self.extractionA = FeatureExtraction(self.in_channels, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d)
+        self.extractionA = FeatureExtraction(self.in_channels, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d).to(device)
             
-        self.extractionB = FeatureExtraction(3, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d)
-        self.l2norm = FeatureL2Norm()
-        self.correlation = FeatureCorrelation()
-        self.regression = FeatureRegression(input_nc=self.resolution[1], output_dim=2 * grid_size**2, linear_dim=linear_dim)
-        self.gridGen = TpsGridGen(*self.resolution, grid_size=grid_size)
+        self.extractionB = FeatureExtraction(3, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d).to(device)
+        self.l2norm = FeatureL2Norm().to(device)
+        self.correlation = FeatureCorrelation().to(device)
+        self.regression = FeatureRegression(input_nc=self.resolution[1], output_dim=2 * grid_size**2, linear_dim=linear_dim).to(device)
+        self.gridGen = TpsGridGen(*self.resolution, grid_size=grid_size, device=device)
 
     def forward(self, inputA, inputB):
 
