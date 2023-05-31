@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
-from utils import get_pose_points
+
 
 
 class ShirtsDataset(Dataset):

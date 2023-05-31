@@ -14,8 +14,8 @@ from tqdm import tqdm
 def train_bpgm(dataloader, model, device='cpu', epochs=1):
     model = model.to(device)
     # criterion
-    criterionL1 = nn.L1Loss()
-    criterionVGG = VGGLoss()
+    criterionL1 = nn.L1Loss().to(device)
+    criterionVGG = VGGLoss().to(device)
 
     # optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -28,11 +28,11 @@ def train_bpgm(dataloader, model, device='cpu', epochs=1):
                 data[key] = data[key].to(device)
 
             shirt = data['shirt']
-            shirt_mask = data['shirt_mask']
-            warped_shirt = data['warped_shirt']
-            cwm = data['torso']
-            mask = data['segmentation']
-
+            shirt_mask = data['shirt_mask'].to(device)
+            warped_shirt = data['warped_shirt'].to(device)
+            cwm = data['torso'].to(device)
+            mask = data['segmentation'].to(device)
+            shirt = shirt.to(device)
             grid = model(mask, shirt)
 
             warped = F.grid_sample(shirt, grid, padding_mode='border', align_corners=True)
