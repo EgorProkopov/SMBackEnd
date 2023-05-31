@@ -125,7 +125,6 @@ class EncoderDecoderDataset(Dataset):
         target = human_restored_image
 
         return input_.float(), target.float()
-        # return human_image, clothes_image, human_restored_image
 
     def __len__(self):
         return len(self.list_of_human_no_clothes_files)
