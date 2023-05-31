@@ -50,7 +50,7 @@ class FeatureCorrelation(nn.Module):
     
 
 class FeatureRegression(nn.Module):
-    def __init__(self, input_nc=512, output_dim=6, linear_dim=64*4*3, use_cuda=False):
+    def __init__(self, input_nc=512, output_dim=6, linear_dim=64*4*3):
         super(FeatureRegression, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(input_nc, 512, kernel_size=4, stride=2, padding=1),
@@ -69,10 +69,6 @@ class FeatureRegression(nn.Module):
         
         self.linear = nn.Linear(linear_dim, output_dim)
         self.tanh = nn.Tanh()
-        if use_cuda:
-            self.conv.cuda()
-            self.linear.cuda()
-            self.tanh.cuda()
 
     def forward(self, x):
         x = self.conv(x)
@@ -83,7 +79,7 @@ class FeatureRegression(nn.Module):
 
         
 class TpsGridGen(nn.Module):
-    def __init__(self, out_h=256, out_w=192, use_regular_grid=True, grid_size=3, reg_factor=0, use_cuda=False):
+    def __init__(self, out_h=256, out_w=192, use_regular_grid=True, grid_size=3, reg_factor=0):
         super(TpsGridGen, self).__init__()
         self.out_h, self.out_w = out_h, out_w
         self.reg_factor = reg_factor
@@ -96,9 +92,9 @@ class TpsGridGen(nn.Module):
         # grid_X,grid_Y: size [1,H,W,1,1]
         self.grid_X = torch.FloatTensor(self.grid_X).unsqueeze(0).unsqueeze(3)
         self.grid_Y = torch.FloatTensor(self.grid_Y).unsqueeze(0).unsqueeze(3)
-        if use_cuda:
-            self.grid_X = self.grid_X.cuda()
-            self.grid_Y = self.grid_Y.cuda()
+        # if use_cuda:
+        #     self.grid_X = self.grid_X.cuda()
+        #     self.grid_Y = self.grid_Y.cuda()
 
         # initialize regular grid for control points P_i
         if use_regular_grid:
@@ -114,11 +110,11 @@ class TpsGridGen(nn.Module):
             self.Li = self.compute_L_inverse(P_X,P_Y).unsqueeze(0)
             self.P_X = P_X.unsqueeze(2).unsqueeze(3).unsqueeze(4).transpose(0,4)
             self.P_Y = P_Y.unsqueeze(2).unsqueeze(3).unsqueeze(4).transpose(0,4)
-            if use_cuda:
-                self.P_X = self.P_X.cuda()
-                self.P_Y = self.P_Y.cuda()
-                self.P_X_base = self.P_X_base.cuda()
-                self.P_Y_base = self.P_Y_base.cuda()
+            # if use_cuda:
+            #     self.P_X = self.P_X.cuda()
+            #     self.P_Y = self.P_Y.cuda()
+            #     self.P_X_base = self.P_X_base.cuda()
+            #     self.P_Y_base = self.P_Y_base.cuda()
 
     def forward(self, theta):
         warped_grid = self.apply_transformation(theta,torch.cat((self.grid_X,self.grid_Y),3))
@@ -262,7 +258,7 @@ class Vgg19(nn.Module):
 class BPGM(nn.Module):
     """ Geometric Matching Module
     """
-    def __init__(self, in_channels=12, use_cuda=False):
+    def __init__(self, in_channels=12):
         super(BPGM, self).__init__()
 
         n_layers = int(math.log(256, 2)) - 5
@@ -281,8 +277,8 @@ class BPGM(nn.Module):
         self.extractionB = FeatureExtraction(3, ngf=ngf, n_layers=n_layers, norm_layer=nn.BatchNorm2d)
         self.l2norm = FeatureL2Norm()
         self.correlation = FeatureCorrelation()
-        self.regression = FeatureRegression(input_nc=self.resolution[1], output_dim=2 * grid_size**2, linear_dim=linear_dim, use_cuda=use_cuda)
-        self.gridGen = TpsGridGen(*self.resolution, use_cuda=use_cuda, grid_size=grid_size)
+        self.regression = FeatureRegression(input_nc=self.resolution[1], output_dim=2 * grid_size**2, linear_dim=linear_dim)
+        self.gridGen = TpsGridGen(*self.resolution, grid_size=grid_size)
 
     def forward(self, inputA, inputB):
 
