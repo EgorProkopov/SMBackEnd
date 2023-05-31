@@ -1,6 +1,8 @@
 import os
 import torch
 import torchvision.transforms as transforms
+import json
+
 
 from PIL import Image
 from dataclasses import dataclass
@@ -92,3 +94,13 @@ def prepare_images_for_encoder(human_image: Image, pose_points_list: list, cloth
         enc_dec_input.shape[2]
     ))
     return enc_dec_input
+
+def get_pose_points(path):
+    with open(path) as json_file:
+        data = json.load(json_file)
+    data = data['people'][0]['pose_keypoints_2d']
+    points = []
+    n = len(data)
+    for i in range(0, n, 3):
+        points.append([data[i-3], data[i-2]])
+    return points
