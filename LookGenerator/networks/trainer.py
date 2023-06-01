@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
@@ -160,7 +162,7 @@ class Trainer:
         Draws plots of train and validation
 
         Args:
-            epochs: TODO: if 'True', draws history plots by epochs, else by batches
+            epochs: if 'True', draws history plots by epochs, else by batches
         """
         if epochs:
             plt.plot(self.train_history_epochs, label="train")
@@ -171,11 +173,117 @@ class Trainer:
             plt.plot(self.val_history_batches, label="val")
             plt.show()
 
+    def save_history_plots(self, save_dir, epochs=True):
+        """
+        Method to save plots images
+        Args:
+            save_dir: directory to save plots images
+            epochs:  if 'True', saves history plots by epochs, else by batches
+
+        """
+        if epochs:
+            plt.plot(self.train_history_epochs, label="train")
+            plt.plot(self.val_history_epochs, label="val")
+            plt.savefig(os.path.join(save_dir, "plot.png"))
+        else:
+            plt.plot(self.train_history_batches, label="train")
+            plt.plot(self.val_history_batches, label="val")
+            plt.savefig(os.path.join(save_dir, "plot.png"))
+
+    def create_readme(self, save_dir):
+        """
+        Method to create readme.txt file with info about trained network
+        Args:
+            save_dir: directory to save readme.txt file
+        """
+        readme = str(self)
+        file = open(os.path.join(save_dir, "readme.txt"), 'w')
+        file.write(readme)
+        file.close()
+
     def __str__(self):
         description = f"Model:\n\t{str(self.model)}\n" \
                       f"Criterion: \n\t{str(type(self.criterion))}\n" \
                       f"Optimizer: \n\t{str(type(self.optimizer))}"
         return description
+
+
+class TrainerWithMask(Trainer):
+    def __init__(
+            self, model_,
+            optimizer, criterion,
+            device='cpu', save_directory=r"",
+            save_step=1, verbose=True
+    ):
+        """
+        Args:
+            model_: model to train
+            optimizer: model optimizer
+            criterion: loss function for this model
+            device: training device. Default: cpu
+            save_directory: Path for this training session directory. Default: ""
+            save_step: Step between epoch saves. Default: 1
+            verbose: If 'True', will print verbose output of the model
+        """
+
+        super().__init__(model_, optimizer, criterion, device, save_directory, save_step, verbose)
+
+    def _train_epoch(self, train_dataloader):
+        """
+        Method for epoch training
+        Args:
+            train_dataloader:  train dataloader
+
+        Returns: train loss
+
+        """
+        self.model = self.model.to(self.device)
+
+        train_running_loss = 0.0
+        self.model.train()
+        for data, mask, targets in tqdm(train_dataloader):
+            data = data.to(self.device)
+            mask = mask.to(self.device)
+            targets = targets.to(self.device)
+            outputs = self.model(data)
+
+            self.optimizer.zero_grad()
+            loss = self.criterion(outputs, mask, targets)
+            loss.backward()
+            self.optimizer.step()
+
+            loss_number = loss.item()
+            train_running_loss += loss_number
+            self.train_history_batches.append(loss_number)
+
+        train_loss = train_running_loss / len(train_dataloader)
+        return train_loss
+
+    def _val_epoch(self, val_dataloader):
+        """
+        Method for epoch validation
+        Args:
+            val_dataloader:
+
+        Returns: validation loss
+
+        """
+        val_running_loss = 0.0
+        self.model.eval()
+        for data, mask, targets in tqdm(val_dataloader):
+            data = data.to(self.device)
+            mask = mask.to(self.device)
+            targets = targets.to(self.device)
+            outputs = self.model(data)
+
+            loss = self.criterion(outputs, mask, targets)
+            loss_number = loss.item()
+            val_running_loss += loss_number
+            self.val_history_batches.append(loss_number)
+
+        val_loss = val_running_loss / len(val_dataloader)
+        return val_loss
+
 
 class GANTrainer:
     def __init__(
