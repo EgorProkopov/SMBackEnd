@@ -18,7 +18,7 @@ def train_bpgm(dataloader, model, device='cpu', epochs=1):
     criterionVGG = VGGLoss().to(device)
 
     # optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     losses = []
     for epoch in range(epochs):
         epoch_loss = []
