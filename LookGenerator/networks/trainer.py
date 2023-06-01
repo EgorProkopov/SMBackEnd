@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
@@ -170,6 +172,34 @@ class Trainer:
             plt.plot(self.train_history_batches, label="train")
             plt.plot(self.val_history_batches, label="val")
             plt.show()
+
+    def save_history_plots(self, save_dir, epochs=True):
+        """
+        Method to save plots images
+        Args:
+            save_dir: directory to save plots images
+            epochs:  if 'True', saves history plots by epochs, else by batches
+
+        """
+        if epochs:
+            plt.plot(self.train_history_epochs, label="train")
+            plt.plot(self.val_history_epochs, label="val")
+            plt.savefig(os.path.join(save_dir, "plot.png"))
+        else:
+            plt.plot(self.train_history_batches, label="train")
+            plt.plot(self.val_history_batches, label="val")
+            plt.savefig(os.path.join(save_dir, "plot.png"))
+
+    def create_readme(self, save_dir):
+        """
+        Method to create readme.txt file with info about trained network
+        Args:
+            save_dir: directory to save readme.txt file
+        """
+        readme = str(self)
+        file = open(os.path.join(save_dir, "readme.txt"), 'w')
+        file.write(readme)
+        file.close()
 
     def __str__(self):
         description = f"Model:\n\t{str(self.model)}\n" \
