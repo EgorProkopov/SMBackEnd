@@ -20,7 +20,7 @@ class ShirtsDataset(Dataset):
         self.transform_mask = transform_mask
 
     def __getitem__(self, idx):
-
+        seed = torch.random.seed()
         totensor = transforms.ToTensor()
         file = self.files_list[idx]
 
@@ -70,10 +70,12 @@ class ShirtsDataset(Dataset):
         warped_shirt = person * torso + invmask
 
         if self.transform:
+            torch.manual_seed(seed)
             shirt = self.transform(shirt)
             warped_shirt = self.transform(warped_shirt)
 
         if self.transform_mask:
+            torch.manual_seed(seed)
             shirt_mask = self.transform_mask(shirt_mask)
             torso = self.transform_mask(torso)
             mask = self.transform_mask(mask)
