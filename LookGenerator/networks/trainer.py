@@ -581,7 +581,7 @@ class WGANGPTrainer:
         self.discriminator_fake_epoch_batches_loss.append(torch.mean(fake_loss).item())
 
         # Loss computation
-        gp = self.gradient_penalty(fake_images, real_images)
+        gp = self.gradient_penalty(self.discriminator, fake_images, real_images, self.device)
         loss_discriminator = real_loss + fake_loss + self.gp_weight * gp
         self.discriminator_history_batches.append(torch.mean(loss_discriminator).item())
         self.discriminator_epoch_batches_loss.append(torch.mean(loss_discriminator).item())
