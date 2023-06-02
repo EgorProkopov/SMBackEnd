@@ -45,7 +45,7 @@ class EncoderDecoderDataset(Dataset):
         self.transform_human_restored = transform_human_restored
         self.augment = augment
 
-        list_of_human_no_clothes_files = os.listdir(os.path.join(image_dir, "imageWithNoCloth"))
+        list_of_human_no_clothes_files = os.listdir(os.path.join(image_dir, "imageWithNoCloth2"))
         if self.pose_points:
             list_of_pose_points_files = os.listdir(os.path.join(image_dir, "posePoints"))
         list_of_clothes_files = os.listdir(os.path.join(image_dir, "cloth"))
