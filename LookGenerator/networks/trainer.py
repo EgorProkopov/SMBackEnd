@@ -555,6 +555,9 @@ class WGANGPTrainer:
         return loss_real, loss_fake, loss_d, loss_g
 
     def _train_discriminator(self, input_images, real_images):
+        self.discriminator.train()
+        self.generator.eval()
+
         # Clear discriminator gradients
         self.optimizer_discriminator.zero_grad()
 
@@ -572,7 +575,7 @@ class WGANGPTrainer:
         fake_images = self.generator(input_images)
 
         # Pass fake images through discriminator
-        fake_targets = -torch.ones(fake_images.shape[0], 1, device=self.device)
+        fake_targets = torch.ones(fake_images.shape[0], -1, device=self.device)
         fake_preds = self.discriminator(fake_images)
         fake_loss = self.criterion_discriminator(fake_preds, fake_targets)
         self.discriminator_fake_history_batches.append(torch.mean(fake_loss).item())
@@ -589,6 +592,9 @@ class WGANGPTrainer:
         self.optimizer_discriminator.step()
 
     def _train_generator(self, input_images, real_images):
+        self.discriminator.eval()
+        self.generator.train()
+
         # Clear generator gradients
         self.optimizer_generator.zero_grad()
 
@@ -627,10 +633,50 @@ class WGANGPTrainer:
         epoch_string = "0"*(num_digits_epoch_num - num_digits_epoch) + str(epoch)
         return epoch_string
 
-    def draw_history_plots(self, ):
+    def draw_history_plots(self):
         """
-        Draws plots of train and validation
+        Draws history plots
         """
-        pass
+        plt.plot(self.discriminator_real_history_epochs, label="discriminator_real")
+        plt.plot(self.discriminator_fake_history_epochs, label="discriminator_fake")
+        plt.plot(self.discriminator_history_epochs, label="discriminator_history")
+        plt.plot(self.generator_history_epochs, label="generator")
+        plt.legend()
+        plt.show()
+
+    def save_history_plots(self, save_dir):
+        """
+        Method to save plots images
+        Args:
+            save_dir: directory to save plots images
+            epochs:  if 'True', saves history plots by epochs, else by batches
+
+        """
+        plt.plot(self.discriminator_real_history_epochs, label="discriminator_real")
+        plt.plot(self.discriminator_fake_history_epochs, label="discriminator_fake")
+        plt.plot(self.discriminator_history_epochs, label="discriminator_history")
+        plt.plot(self.generator_history_epochs, label="generator")
+        plt.legend()
+        plt.savefig(os.path.join(save_dir, "plot.png"))
+
+    def create_readme(self, save_dir):
+        """
+        Method to create readme.txt file with info about trained network
+        Args:
+            save_dir: directory to save readme.txt file
+        """
+        readme = str(self)
+        file = open(os.path.join(save_dir, "readme.txt"), 'w')
+        file.write(readme)
+        file.close()
+
+    def __str__(self):
+        description = f"Generator:\n\t{str(self.generator)}\n" \
+                      f"Discriminator:\n\t{str(self.discriminator)}\n" \
+                      f"Criterion generator: \n\t{str(self.criterion_generator)}\n" \
+                      f"Criterion discriminator: \n\t{str(type(self.criterion_discriminator))}\n" \
+                      f"Optimizer generator: \n\t{str(self.optimizer_generator)}\n" \
+                      f"Optimizer discriminator: \n\t{str(type(self.optimizer_discriminator))}\n"
+        return description
 
 
