@@ -574,7 +574,7 @@ class WGANGPTrainer:
         fake_images = self.generator(input_images)
 
         # Pass fake images through discriminator
-        fake_targets = torch.ones(fake_images.shape[0], -1, device=self.device)
+        fake_targets = -torch.ones(fake_images.shape[0], 1, device=self.device)
         fake_preds = self.discriminator(fake_images)
         fake_loss = self.criterion_discriminator(fake_preds, fake_targets)
         self.discriminator_fake_history_batches.append(torch.mean(fake_loss).item())

@@ -54,7 +54,7 @@ class EncoderDecoderGenerator(nn.Module):
         self.deconv_module5 = nn.UpsamplingNearest2d(scale_factor=2)
 
         self.deconv_conv_module5 = nn.Sequential(
-            Conv5x5(in_channels=64 * 2, out_channels=32, batch_norm=True, activation_func=nn.LeakyReLU(), res_conn=True)
+            Conv5x5(in_channels=64 * 2, out_channels=32, batch_norm=True, activation_func=nn.LeakyReLU(), res_conn=False)
         )
 
         self.final_conv = nn.Sequential(

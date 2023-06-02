@@ -109,7 +109,7 @@ class Conv5x5(nn.Module):
         if self.res_conn:
             shortcut = x
             additional_channels = torch.zeros((
-                shortcut.shape[0], self.out_channels - self.in_channels, shortcut.shape[2], shortcut.shape[3]
+                shortcut.shape[0], abs(self.out_channels - self.in_channels), shortcut.shape[2], shortcut.shape[3]
             ))
             additional_channels = additional_channels.to(shortcut.device)
             shortcut = torch.cat((shortcut, additional_channels), dim=1)
