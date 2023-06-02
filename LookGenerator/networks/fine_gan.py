@@ -104,7 +104,7 @@ class EncoderDecoderGenerator(nn.Module):
         out = torch.concat((out, clothes_features), axis=1)
         out = self.bottle_neck(out)
 
-        out = self.deconv_module1()
+        out = self.deconv_module1(out)
         out = torch.cat((out, skip_connections[4]), axis=1)
         out = self.deconv_conv_module1(out)
 
