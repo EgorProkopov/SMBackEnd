@@ -262,6 +262,45 @@ class PerceptualLoss(nn.Module):
         return description
 
 
+class EncoderDecoderWithMaskLoss(nn.Module):
+    """
+    Encoder-decoder custom loss for in-painting task
+    """
+    def __init__(self, device='cpu', weights=[1.0, 1.0, 1.0, 1.0]):
+        """
+        Args:
+            device: device for loss computation
+            weights: weights of loss part:
+                - 1st weight: weight of base perceptual loss
+                - 2nd weight: weight of masked perceptual loss
+                - 3rd weight: weight of base per pixel loss
+                - 4th weight: weight of masked per pixel loss
+        """
+        super(EncoderDecoderWithMaskLoss, self).__init__()
+        self.perceptual_loss = PerceptualLoss(device, weights_perceptual=[1.0, 1.0, 1.0, 1.0])
+        self.per_pixel_loss = PerPixelLoss().to(device)
+        self.weights = weights
+
+    def forward(self, outputs, mask, targets):
+        perceptual = self.perceptual_loss(outputs, targets)
+        per_pixel = self.per_pixel_loss(outputs, targets)
+        outputs_masked = outputs*mask
+        targets_masked = targets*mask
+        perceptual_masked = self.perceptual_loss(outputs_masked, targets_masked)
+        per_pixel_masked = self.per_pixel_loss(outputs_masked, targets_masked)
+
+        loss = (self.weights[0] * perceptual + self.weights[1] * perceptual_masked +  self.weights[2] * per_pixel + self.weights[3] * per_pixel_masked) / sum(self.weights)
+
+        return loss
+
+    def __repr__(self):
+        description = f"Encoder-decoder custom loss for in-painting task\n:" \
+                      f"\t Perceptual loss: {repr(self.perceptual_loss)}\n" \
+                      f"\t per_pixel_loss: {repr(self.per_pixel_loss)}\n" \
+                      f"\t weights: {str(self.weights)}"
+        return description
+
+
 class WassersteinLoss(nn.Module):
     """
     Wasserstein loss is a loss for discriminator and generator of generative adversarial network
