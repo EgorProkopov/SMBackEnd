@@ -603,7 +603,7 @@ class WGANGPTrainer:
         # Try to fool discriminator
         preds = self.discriminator(fake_images)
         targets = torch.ones(real_images.shape[0], 1, device=self.device)
-        loss_g = self.criterion_generator(preds, targets)
+        loss_g = self.criterion_generator(preds, targets, fake_images, real_images)
         self.generator_history_batches.append(torch.mean(loss_g).item())
         self.generator_epoch_batches_loss.append(torch.mean(loss_g).item())
 
