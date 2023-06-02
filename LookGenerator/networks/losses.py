@@ -19,6 +19,7 @@ class IoUMetricBin(nn.Module):
     J(A, B) = |A and B| / |A or B| = |A and B| / (|A| + |B| - |A and B|)
 
     """
+
     def __init__(self):
         super(IoUMetricBin, self).__init__()
 
@@ -53,6 +54,10 @@ class FocalLossBin(nn.Module):
         focal_loss = self.alpha * (1 - bce_exp) ** self.gamma * bce
 
         return focal_loss
+
+    def __repr__(self):
+        description = f"Focal loss for binary segmentation"
+        return description
 
 
 class FocalLossMulti(nn.Module):
@@ -89,7 +94,6 @@ class FocalLossMulti(nn.Module):
 
         return focal_loss
 
-
         # inputs = inputs.view(batch_size, num_classes, -1)
         # targets = targets.view(batch_size, -1)
         #
@@ -103,6 +107,10 @@ class FocalLossMulti(nn.Module):
         #     focal_loss = torch.sum(focal_loss)
         #
         # return focal_loss
+
+    def __repr__(self):
+        description = f"Focal loss for multichannel segmentation"
+        return description
 
 
 class DiceLossBin(nn.Module):
@@ -128,10 +136,9 @@ class FocalDiceLossBin(nn.Module):
         self.weight = weight
 
     def forward(self, inputs, target):
-
         fcl = self.focal_bin(inputs, target)
         dc = self.dice(inputs, target)
-        fd = self.weight*fcl + dc
+        fd = self.weight * fcl + dc
 
         return fd
 
@@ -164,6 +171,7 @@ class VGG16IntermediateOutputs(nn.Module):
     """
     Class to get VGG16 model intermediate outputs to calculate perceptual loss
     """
+
     def __init__(self, device, layer_name_mapping=None):
         super(VGG16IntermediateOutputs, self).__init__()
         vgg16_model = models.vgg16(pretrained=True)
@@ -189,16 +197,25 @@ class VGG16IntermediateOutputs(nn.Module):
 
         return output
 
+    def __repr__(self):
+        description = f"VGG16 outputs for perceptual loss computation"
+        return description
+
 
 class PerPixelLoss(nn.Module):
     """
     L1-loss
     """
+
     def __init__(self):
         super(PerPixelLoss, self).__init__()
 
     def forward(self, outputs, targets):
         return torch.mean(torch.abs(targets - outputs))
+
+    def __repr__(self):
+        description = f"L1 loss"
+        return description
 
 
 class PerceptualLoss(nn.Module):
@@ -206,6 +223,7 @@ class PerceptualLoss(nn.Module):
     This perceptual loss calculate MSE loss between vgg16 activation maps
     of model output image and target image
     """
+
     def __init__(self, device, weights_perceptual=[1.0, 1.0, 1.0, 1.0]):
         """
         Args:
@@ -237,22 +255,34 @@ class PerceptualLoss(nn.Module):
         loss = loss_relu1_2 + loss_relu2_2 + loss_relu3_3 + loss_relu4_3
         return loss
 
+    def __repr__(self):
+        description = f"PerceptualLoss: \n" \
+                      f"\t feature extractor: {repr(self.vgg16)}"
+
+        return description
+
 
 class WassersteinLoss(nn.Module):
     """
     Wasserstein loss is a loss for discriminator and generator of generative adversarial network
     """
+
     def __init__(self):
         super(WassersteinLoss, self).__init__()
 
     def forward(self, outputs, targets):
         return -torch.mean(targets * outputs)
 
+    def __repr__(self):
+        description = f"Wasserstein loss for WGAN"
+        return description
+
 
 class GradientPenalty(nn.Module):
     """
     Gradient Penalty for Wasserstein loss
     """
+
     def __init__(self, discriminator, device):
         """
         Returns:
@@ -281,11 +311,16 @@ class GradientPenalty(nn.Module):
 
         return gradient_penalty
 
+    def __repr__(self):
+        description = f"Gradient penalty"
+        return description
+
 
 class FineGANLoss(nn.Module):
     """
     Loss for FineGAN model
     """
+
     def __init__(
             self, adversarial_criterion, adv_loss_weight=1,
             l1_criterion=True, l1_loss_weight=4,
@@ -332,6 +367,14 @@ class FineGANLoss(nn.Module):
 
         return adversarial_loss
 
+    def __repr__(self):
+        description = f"FineGAN loss:\n" \
+                      f"\tadversarial_criterion: {repr(self.adversarial_criterion)}\n" \
+                      f"\tl1_criterion: {repr(self.l1_criterion)}\n" \
+                      f"\tperceptual_criterion: {repr(self.perceptual_criterion)}" \
+                      f"\tweights: {str(self.adv_loss_weight)}, {str(self.l1_loss_weight)}, {str(self.perceptual_loss_weight)}"
+        return description
+
 
 class VAELoss(nn.Module):
     def __init__(self, recon_coeff=1, kld_coeff=0.5, recon_loss=nn.MSELoss()):
@@ -374,3 +417,7 @@ class VAELoss(nn.Module):
         kld = self._kl_divergence(mu, log_var)
         recon = self._log_likelihood(x, reconstruction)
         return self.recon_coeff * recon + self.kld_coeff * kld
+
+    def __repr__(self):
+        description = f"VAE loss"
+        return description

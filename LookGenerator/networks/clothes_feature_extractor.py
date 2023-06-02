@@ -261,8 +261,9 @@ class ClothAutoencoder(nn.Module):
         out = self.decode(z)
         return out
 
-    def __str__(self):
+    def __repr__(self):
         features_str = str(self.features)
         latent_size_str = str(self.latent_dim_size)
 
-        return "features: " + features_str + ", " + "latent_size: " + latent_size_str
+        description = "Autoencoder:\n\tfeatures: " + features_str + ", " + "latent_size: " + latent_size_str
+        return description

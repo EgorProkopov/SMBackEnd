@@ -129,6 +129,16 @@ class EncoderDecoderGenerator(nn.Module):
 
         return out
 
+    def __str__(self):
+        features_str = str(self.features)
+        latent_size_str = str(self.latent_dim_size)
+
+        description = f"EncoderDecoderGenerator:\n" \
+                      f"\tfeatures: {features_str}\n" \
+                      f"\tlatent_size: {latent_size_str}\n" \
+                      f"\tfinal_activation_func: {str(self.final_activation_func)}"
+        return description
+
 
 class Discriminator(nn.Module):
     """
@@ -142,6 +152,8 @@ class Discriminator(nn.Module):
             sigmoid: if 'True', puts the sigmoid activation function in the end
         """
         super(Discriminator, self).__init__()
+
+        self.batch_norm = batch_norm
 
         self.features = nn.Sequential(
             # input size: in_channels x 256x192
@@ -209,4 +221,12 @@ class Discriminator(nn.Module):
         if self.sigmoid:
             out = nn.functional.sigmoid(out)
         return out
+
+    def __str__(self):
+        description = f"Discriminator:" \
+                      f"\tfeature_extractor: {str(self.features)}\n" \
+                      f"\tclassifier: {str(self.classifier)}\n" \
+                      f"\tbatch_norm: {self.batch_norm}\n" \
+                      f"\tsigmoid: {self.sigmoid}"
+        return description
 

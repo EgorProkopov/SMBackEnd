@@ -196,15 +196,15 @@ class Trainer:
         Args:
             save_dir: directory to save readme.txt file
         """
-        readme = str(self)
+        readme = repr(self)
         file = open(os.path.join(save_dir, "readme.txt"), 'w')
         file.write(readme)
         file.close()
 
-    def __str__(self):
-        description = f"Model:\n\t{str(self.model)}\n" \
-                      f"Criterion: \n\t{str(type(self.criterion))}\n" \
-                      f"Optimizer: \n\t{str(type(self.optimizer))}"
+    def __repr__(self):
+        description = f"Model:\n\t{repr(self.model)}\n" \
+                      f"Criterion: \n\t{repr(self.criterion)}\n" \
+                      f"Optimizer: \n\t{repr(type(self.optimizer))}"
         return description
 
 
@@ -665,18 +665,18 @@ class WGANGPTrainer:
         Args:
             save_dir: directory to save readme.txt file
         """
-        readme = str(self)
+        readme = repr(self)
         file = open(os.path.join(save_dir, "readme.txt"), 'w')
         file.write(readme)
         file.close()
 
-    def __str__(self):
-        description = f"Generator:\n\t{str(self.generator)}\n" \
-                      f"Discriminator:\n\t{str(self.discriminator)}\n" \
-                      f"Criterion generator: \n\t{str(self.criterion_generator)}\n" \
-                      f"Criterion discriminator: \n\t{str(type(self.criterion_discriminator))}\n" \
-                      f"Optimizer generator: \n\t{str(self.optimizer_generator)}\n" \
-                      f"Optimizer discriminator: \n\t{str(type(self.optimizer_discriminator))}\n"
+    def __repr__(self):
+        description = f"Generator:\n\t{repr(self.generator)}\n" \
+                      f"Discriminator:\n\t{repr(self.discriminator)}\n" \
+                      f"Criterion generator: \n\t{repr(self.criterion_generator)}\n" \
+                      f"Criterion discriminator: \n\t{repr(type(self.criterion_discriminator))}\n" \
+                      f"Optimizer generator: \n\t{repr(self.optimizer_generator)}\n" \
+                      f"Optimizer discriminator: \n\t{repr(type(self.optimizer_discriminator))}\n"
         return description
 
 

@@ -93,6 +93,15 @@ class UNet(nn.Module):
 
         return out
 
+    def __repr__(self):
+        features_str = str(self.features)
+        latent_size_str = str(self.latent_dim_size)
+        final_activation_func_str = str(self.final_activation)
+        description = "UNet: \n\tfeatures: " + features_str + ", "\
+                      + "latent_size: " + latent_size_str +\
+                      ", final activation func: " + final_activation_func_str
+        return description
+
 
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
     """
