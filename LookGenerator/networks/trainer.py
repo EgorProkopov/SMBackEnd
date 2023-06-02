@@ -555,6 +555,8 @@ class WGANGPTrainer:
         return loss_real, loss_fake, loss_d, loss_g
 
     def _train_discriminator(self, input_images, real_images):
+        self.discriminator = self.discriminator.to(self.device)
+        self.generator = self.generator.to(self.device)
         self.discriminator.train()
         self.generator.eval()
 
@@ -592,6 +594,8 @@ class WGANGPTrainer:
         self.optimizer_discriminator.step()
 
     def _train_generator(self, input_images, real_images):
+        self.discriminator = self.discriminator.to(self.device)
+        self.generator = self.generator(self.device)
         self.discriminator.eval()
         self.generator.train()
 
