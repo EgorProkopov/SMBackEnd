@@ -446,7 +446,7 @@ class WGANGPTrainer:
     def __init__(
             self, generator, discriminator,
             optimizer_generator,  optimizer_discriminator,
-            criterion_generator, criterion_discriminator, gradient_penalty, gp_weight = 0.2,
+            criterion_generator, criterion_discriminator, gradient_penalty, gp_weight=0.2,
             save_step=1, save_directory_discriminator=r"", save_directory_generator=r"",
             device='cpu', verbose=True
     ):
