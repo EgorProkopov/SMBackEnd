@@ -8,7 +8,7 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 class EncoderDecoderGenerator(nn.Module):
     """Generator part of the GAN """
 
-    def __init__(self, clothes_feature_extractor, in_channels=3, out_channels=3):
+    def __init__(self, clothes_feature_extractor, in_channels=3, out_channels=3, final_activation_func=nn.Sigmoid()):
         """
 
         Args:
@@ -60,7 +60,7 @@ class EncoderDecoderGenerator(nn.Module):
         self.final_conv = nn.Sequential(
             nn.Conv2d(in_channels=32, out_channels=out_channels, kernel_size=1)
         )
-        self.sigmoid = nn.Sigmoid()
+        self.final_activation_func = final_activation_func
 
     def forward(self, x):
         """
@@ -125,7 +125,7 @@ class EncoderDecoderGenerator(nn.Module):
         out = self.deconv_conv_module5(out)
 
         out = self.final_conv(out)
-        out = self.sigmoid(out)
+        out = self.final_activation_func(out)
 
         return out
 
@@ -180,14 +180,24 @@ class Discriminator(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2),
             # output size: 256x8x6
 
+            Conv5x5(in_channels=256, out_channels=512,
+                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(in_channels=512, out_channels=512,
+                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            # output size: 512x4x3
+
+            Conv5x5(in_channels=512, out_channels=1024,
+                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(in_channels=1024, out_channels=1024,
+                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            # output size: 1024x2x1
+
         )
         self.flatten = nn.Flatten()
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=256*8*6, out_features=1024),
-            nn.Dropout(p=0.5),
-            nn.LeakyReLU(),
-
-            nn.Linear(in_features=1024, out_features=1)
+            nn.Linear(in_features=1024*2*1, out_features=1)
         )
 
         self.sigmoid = sigmoid
