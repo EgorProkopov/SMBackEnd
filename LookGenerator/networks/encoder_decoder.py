@@ -131,6 +131,9 @@ class EncoderDecoder(nn.Module):
 
         return out
 
-    def __str__(self):
-        description = f"Encoder-decoder: \n\tbase model \nAutoencoder: \n\t{str(self.clothes_feature_extractor)}"
+    def __repr__(self):
+        description = f"Encoder-decoder: \n\t" \
+                      f"base model \n" \
+                      f"Clothes feature extractor: " \
+                      f"\n\t{repr(self.clothes_feature_extractor)}"
         return description
