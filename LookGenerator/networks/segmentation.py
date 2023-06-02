@@ -16,7 +16,7 @@ class UNet(nn.Module):
     UNet model for segmentation with changeable number of layers
     """
     def __init__(
-            self, in_channels=3, out_channels=1, features=(64, 128, 256, 512)
+            self, in_channels=3, out_channels=1, features=(64, 128, 256, 512), final_activation=nn.Sigmoid()
     ):
         """
         Args:
@@ -57,7 +57,7 @@ class UNet(nn.Module):
             # Conv5x5(features[0], features[0], batch_norm=True, dropout=False, activation_func=nn.ReLU()),
             nn.Conv2d(features[0], out_channels, kernel_size=1)
         )
-        self.softmax = nn.Softmax(dim=1)  # - откомментить, если используется самописная функция активации
+        self.final_activation = final_activation
 
     def forward(self, x):
         """
@@ -89,13 +89,9 @@ class UNet(nn.Module):
             x = self.ups[i + 1](concat_skip)
 
         out = self.classifier(x)
-        out = self.softmax(out)
+        out = self.final_activation(out)
 
         return out
-    
-    @staticmethod
-    def load():
-        pass
 
 
 def train_unet(model, train_dataloader, val_dataloader, optimizer, device='cpu', epoch_num=5, save_directory=""):
