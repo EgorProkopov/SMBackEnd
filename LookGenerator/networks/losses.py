@@ -270,7 +270,7 @@ class EncoderDecoderWithMaskLoss(nn.Module):
         """
         Args:
             device: device for loss computation
-            weights: weights of loss part:
+            weights: weights of loss parts:
                 - 1st weight: weight of base perceptual loss
                 - 2nd weight: weight of masked perceptual loss
                 - 3rd weight: weight of base per pixel loss
@@ -364,7 +364,7 @@ class FineGANLoss(nn.Module):
             self, adversarial_criterion, adv_loss_weight=1,
             l1_criterion=True, l1_loss_weight=4,
             perceptual=True, perceptual_loss_weight=1,
-            device=None
+            device='cpu'
     ):
         """
 
@@ -412,6 +412,70 @@ class FineGANLoss(nn.Module):
                       f"\tl1_criterion: {repr(self.l1_criterion)}\n" \
                       f"\tperceptual_criterion: {repr(self.perceptual_criterion)}" \
                       f"\tweights: {str(self.adv_loss_weight)}, {str(self.l1_loss_weight)}, {str(self.perceptual_loss_weight)}"
+        return description
+
+
+class FineGANWithMaskLoss(nn.Module):
+    """
+    FineGAN model loss for in-painting
+    """
+    def __init__(
+            self, adversarial_criterion,
+            l1_criterion, perceptual_criterion,
+            weights=(4.0, 4.0, 1.0, 1.0, 1.0, 1.0),
+            device='cpu'
+    ):
+        """
+        Args:
+            adversarial_criterion: the adversarial part of GAN loss (can be BCE or MSE or something like this)
+            l1_criterion: l1 part of loss
+            perceptual_criterion: perceptual part of GAN loss
+            weights: weights of loss parts:
+                - 1st weight: weight of base adversarial loss
+                - 2nd weight: weight of masked adversarial loss
+                - 3rd weight: weight of base perceptual loss
+                - 4th weight: weight of masked perceptual loss
+                - 5th weight: weight of base per pixel loss
+                - 6th weight: weight of masked per pixel loss
+            device: device on which computation will be performed (it is necessary to use perceptual loss)
+        """
+        super(FineGANWithMaskLoss, self).__init__()
+
+        self.device = device
+
+        self.adversarial_criterion = adversarial_criterion.to(self.device)
+        self.perceptual_criterion = perceptual_criterion.to(self.device)
+        self.l1_criterion = l1_criterion.to(self.device)
+
+        self.weights = list(weights)
+
+    def forward(self, outputs, mask, targets):
+        outputs_masked = outputs * mask
+        targets_masked = targets * mask
+
+        adversarial_loss = self.adversarial_criterion(outputs, targets)
+        adversarial_loss_masked = self.adversarial_criterion(outputs_masked, targets_masked)
+
+        perceptual_loss = self.perceptual_criterion(outputs, targets)
+        perceptual_loss_masked = self.perceptual_criterion(outputs_masked, targets_masked)
+
+        l1_loss = self.l1_criterion(outputs, targets)
+        l1_loss_masked = self.l1_criterion(outputs_masked, targets_masked)
+
+        adv_loss_weighted = self.weights[0] * adversarial_loss + self.weights[1] * adversarial_loss_masked
+        perceptual_loss_weighted = self.weights[2] * perceptual_loss + self.weights[3] * perceptual_loss_masked
+        l1_loss_weighted = self.weights[4] * l1_loss + self.weights[5] * l1_loss_masked
+
+        loss = (adv_loss_weighted + perceptual_loss_weighted + l1_loss_weighted) / sum(self.weights)
+
+        return loss
+
+    def __repr__(self):
+        description = f"FineGAN model loss for in-painting:\n" \
+                      f"\tadversarial_criterion: {repr(self.adversarial_criterion)}\n" \
+                      f"\tperceptual_criterion: {repr(self.perceptual_criterion)}\n" \
+                      f"\tl1_criterion: {repr(self.l1_criterion)}\n" \
+                      f"\tweights: {str(self.weights)}"
         return description
 
 
