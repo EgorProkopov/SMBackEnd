@@ -422,7 +422,7 @@ class FineGANWithMaskLoss(nn.Module):
     def __init__(
             self, adversarial_criterion,
             l1_criterion, perceptual_criterion,
-            weights=(4.0, 4.0, 1.0, 1.0, 1.0, 1.0),
+            weights=(4.0, 1.0, 1.0, 1.0, 1.0),
             device='cpu'
     ):
         """
@@ -432,11 +432,10 @@ class FineGANWithMaskLoss(nn.Module):
             perceptual_criterion: perceptual part of GAN loss
             weights: weights of loss parts:
                 - 1st weight: weight of base adversarial loss
-                - 2nd weight: weight of masked adversarial loss
-                - 3rd weight: weight of base perceptual loss
-                - 4th weight: weight of masked perceptual loss
-                - 5th weight: weight of base per pixel loss
-                - 6th weight: weight of masked per pixel loss
+                - 2nd weight: weight of base perceptual loss
+                - 3rd weight: weight of masked perceptual loss
+                - 4th weight: weight of base per pixel loss
+                - 5th weight: weight of masked per pixel loss
             device: device on which computation will be performed (it is necessary to use perceptual loss)
         """
         super(FineGANWithMaskLoss, self).__init__()
@@ -449,22 +448,21 @@ class FineGANWithMaskLoss(nn.Module):
 
         self.weights = list(weights)
 
-    def forward(self, outputs, mask, targets):
+    def forward(self, preds, targets, outputs, mask, real_images):
         outputs_masked = outputs * mask
-        targets_masked = targets * mask
+        real_images_masked = real_images * mask
 
-        adversarial_loss = self.adversarial_criterion(outputs, targets)
-        adversarial_loss_masked = self.adversarial_criterion(outputs_masked, targets_masked)
+        adversarial_loss = self.adversarial_criterion(preds, targets)
 
-        perceptual_loss = self.perceptual_criterion(outputs, targets)
-        perceptual_loss_masked = self.perceptual_criterion(outputs_masked, targets_masked)
+        perceptual_loss = self.perceptual_criterion(outputs, real_images)
+        perceptual_loss_masked = self.perceptual_criterion(outputs_masked, real_images_masked)
 
-        l1_loss = self.l1_criterion(outputs, targets)
-        l1_loss_masked = self.l1_criterion(outputs_masked, targets_masked)
+        l1_loss = self.l1_criterion(outputs, real_images)
+        l1_loss_masked = self.l1_criterion(outputs_masked, real_images_masked)
 
-        adv_loss_weighted = self.weights[0] * adversarial_loss + self.weights[1] * adversarial_loss_masked
-        perceptual_loss_weighted = self.weights[2] * perceptual_loss + self.weights[3] * perceptual_loss_masked
-        l1_loss_weighted = self.weights[4] * l1_loss + self.weights[5] * l1_loss_masked
+        adv_loss_weighted = self.weights[0] * adversarial_loss
+        perceptual_loss_weighted = self.weights[1] * perceptual_loss + self.weights[2] * perceptual_loss_masked
+        l1_loss_weighted = self.weights[3] * l1_loss + self.weights[4] * l1_loss_masked
 
         loss = (adv_loss_weighted + perceptual_loss_weighted + l1_loss_weighted) / sum(self.weights)
 
