@@ -440,8 +440,9 @@ class GANTrainer:
 
 class WGANGPTrainer:
     """
-    TODO: не работает, нужно переписать функцию тренировки
+    Класс тренировщика для обучения Wasserstein GAN'а
     """
+    # TODO: добавить валидацию в тренировщик
     def __init__(
             self, generator, discriminator,
             optimizer_generator,  optimizer_discriminator,
