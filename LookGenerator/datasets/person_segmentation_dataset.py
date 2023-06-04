@@ -69,7 +69,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
             if self.transform_output:
                 torch.manual_seed(seed)
                 part = self.transform_output(part)
-            target = torch.cat((target, part), axis=0)
+            target = torch.cat((target, part), dim=0)
 
         input_ = to_tensor(input_)
 
@@ -78,6 +78,79 @@ class PersonSegmentationDatasetMultichannel(Dataset):
             input_ = self.transform_input(input_)
 
         return input_.float(), target.float()
+
+    def __len__(self):
+        """
+        Returns: the length of the dataset
+        """
+
+        return len(self._files_list)
+
+
+class PersonSegmentationDatasetMultichannel2(Dataset):
+    """
+    DEPRECATED
+
+    Dataset for a Person Segmentation task, uses multichannel mask
+    Might be deprecated soon
+    """
+
+    def __init__(self, image_dir: str, transform_input=None, transform_output=None, augment=None):
+        """
+        Args:
+            image_dir: Directory with all images
+            transform_input: A transform to be applied on input images. Default: None
+            transform_output: A transform to be applied on mask of image. Default: None
+        """
+
+        super().__init__()
+
+        self.root = image_dir
+        self.transform_input = transform_input
+        self.transform_output = transform_output
+        self.augment = augment
+
+        list_of_files = os.listdir(image_dir + r"\image")
+        self._files_list = [file.split('.')[0] for file in list_of_files]
+
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Args:
+            idx: The index of data sample
+
+        Returns: A Pair of X and y objects for segmentation
+        """
+
+        seed = torch.random.seed()
+
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        to_tensor = ToTensor()
+
+        input_ = np.array(load_image(self.root, "image", self._files_list[idx], ".jpg"))
+
+        target = []
+
+        channel_list = os.listdir(os.path.join(
+            self.root,
+            "image-parse-v3.1-multichannel",
+            self._files_list[idx]
+        ))
+
+        for channel in channel_list:
+            target.append(np.array(load_image(
+                self.root, os.path.join("image-parse-v3.1-multichannel", self._files_list[idx]),
+                channel, ""
+            )))
+
+        target = np.dstack(target)
+
+        transformed = self.augment(image=input_, mask=target)
+        input_ = to_tensor(transformed['image'])
+        target = to_tensor(transformed['mask'])
+
+        return input_, target
 
     def __len__(self):
         """
