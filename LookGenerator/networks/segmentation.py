@@ -98,11 +98,9 @@ class UNet(nn.Module):
 
     def __repr__(self):
         features_str = str(self.features)
-        latent_size_str = str(self.latent_dim_size)
         final_activation_func_str = str(self.final_activation)
         description = "UNet: \n\tfeatures: " + features_str + ", "\
-                      + "latent_size: " + latent_size_str +\
-                      ", final activation func: " + final_activation_func_str
+                      + ", final activation func: " + final_activation_func_str
         return description
 
 
