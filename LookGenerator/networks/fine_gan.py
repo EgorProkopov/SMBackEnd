@@ -142,8 +142,28 @@ class EncoderDecoderGenerator(nn.Module):
 
 # TODO: new generator network
 class ResNetGenerator(nn.Module):
-    def __init__(self):
-        pass
+    def __init__(
+            self, clothes_feature_extractor,
+            image_in_channels=3, image_out_channels=3,
+            clothes_in_channels=3,
+            unet_encoder_features=(16, 32, 64, 128),
+            resnet_bottleneck_features=(128, 128, 128, 128, 128),
+            final_block_features=(16,),
+            final_activation_func=nn.Sigmoid()
+    ):
+        super(ResNetGenerator, self).__init__()
+
+        self.clothes_feature_extractor = clothes_feature_extractor
+
+        self.image_in_channels = image_in_channels
+        self.image_out_channels = image_out_channels
+        self.clothes_in_channels = clothes_in_channels
+
+        self.unet_encoder_features = unet_encoder_features
+        self.resnet_bottleneck_features = resnet_bottleneck_features
+
+        self.final_block_features = final_block_features
+        self.final_activation_func = final_activation_func
 
 
 class Discriminator(nn.Module):
