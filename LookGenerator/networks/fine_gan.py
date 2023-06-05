@@ -140,11 +140,17 @@ class EncoderDecoderGenerator(nn.Module):
         return description
 
 
+# TODO: new generator network
+class ResNetGenerator(nn.Module):
+    def __init__(self):
+        pass
+
+
 class Discriminator(nn.Module):
     """
     Discriminator of the GAN network
     """
-    def __init__(self, in_channels=3, batch_norm=True, sigmoid=True):
+    def __init__(self, in_channels=3, batch_norm=False, dropout=True, sigmoid=True):
         """
 
         Args:
@@ -157,52 +163,94 @@ class Discriminator(nn.Module):
 
         self.features = nn.Sequential(
             # input size: in_channels x 256x192
-            Conv5x5(in_channels=in_channels, out_channels=16,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=16, out_channels=16,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=in_channels, out_channels=16,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=16, out_channels=16,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # size: 16x128x96
 
-            Conv5x5(in_channels=16, out_channels=32,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=32, out_channels=32,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=16, out_channels=32,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=32, out_channels=32,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # size: 32x64x48
 
-            Conv5x5(in_channels=32, out_channels=64,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=64, out_channels=64,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=32, out_channels=64,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=64, out_channels=64,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # size: 64x32x24
 
-            Conv5x5(in_channels=64, out_channels=128,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=128, out_channels=128,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=64, out_channels=128,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=128, out_channels=128,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # size: 128x16x12
 
-            Conv5x5(in_channels=128, out_channels=256,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=256, out_channels=256,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=128, out_channels=256,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=256, out_channels=256,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # output size: 256x8x6
 
-            Conv5x5(in_channels=256, out_channels=512,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=512, out_channels=512,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=256, out_channels=512,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=512, out_channels=512,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # output size: 512x4x3
 
-            Conv5x5(in_channels=512, out_channels=1024,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
-            Conv5x5(in_channels=1024, out_channels=1024,
-                    batch_norm=batch_norm, activation_func=nn.LeakyReLU(), res_conn=True),
+            Conv5x5(
+                in_channels=512, out_channels=1024,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
+            Conv5x5(
+                in_channels=1024, out_channels=1024,
+                batch_norm=batch_norm, dropout=dropout,
+                activation_func=nn.LeakyReLU(), res_conn=True
+            ),
             nn.MaxPool2d(kernel_size=2, stride=2),
             # output size: 1024x2x1
 
