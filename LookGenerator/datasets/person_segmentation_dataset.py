@@ -87,7 +87,7 @@ class PersonSegmentationDatasetMultichannel(Dataset):
         return len(self._files_list)
 
 
-class PersonSegmentationDatasetMultichannel2(Dataset):
+class PersonSegmentationDatasetMultichannelV2(Dataset):
     """
     DEPRECATED
 
@@ -121,8 +121,6 @@ class PersonSegmentationDatasetMultichannel2(Dataset):
         Returns: A Pair of X and y objects for segmentation
         """
 
-        seed = torch.random.seed()
-
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
@@ -147,6 +145,8 @@ class PersonSegmentationDatasetMultichannel2(Dataset):
         target = np.dstack(target)
 
         transformed = self.augment(image=input_, mask=target)
+        transformed['mask'][:, :, 0] = (~transformed['mask'][:, :, 0]).astype(np.uint8)
+
         input_ = to_tensor(transformed['image'])
         target = to_tensor(transformed['mask'])
 
