@@ -76,40 +76,40 @@ class FocalLossMulti(nn.Module):
         )
 
     def forward(self, outputs, targets):
-        # targets = targets.float()
-        # batch_size, num_labels = outputs.size(0), outputs.size(1)
-        #
-        # cum_loss = torch.Tensor([0]).to(self.device)
-        #
-        # for label in range(num_labels):
-        #     output_channel = outputs[:][label]
-        #     target_channel = targets[:][label]
-        #
-        #     cum_loss += self.focal_loss_bin(output_channel, target_channel)
-        #
-        # if self.reduction == 'sum':
-        #     focal_loss = cum_loss
-        # elif self.reduction == 'mean':
-        #     focal_loss = cum_loss / num_labels
-        #
-        # return focal_loss
-
         targets = targets.float()
         batch_size, num_labels = outputs.size(0), outputs.size(1)
 
-        inputs = outputs.view(batch_size, num_labels, -1)
-        targets = targets.view(batch_size, -1)
+        cum_loss = torch.Tensor([0]).to(self.device)
 
-        ce_loss = functional.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
-        pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        for label in range(num_labels):
+            output_channel = outputs[:][label]
+            target_channel = targets[:][label]
 
-        if self.reduction == 'mean':
-            focal_loss = torch.mean(focal_loss)
-        elif self.reduction == 'sum':
-            focal_loss = torch.sum(focal_loss)
+            cum_loss += self.focal_loss_bin(output_channel, target_channel)
+
+        if self.reduction == 'sum':
+            focal_loss = cum_loss
+        elif self.reduction == 'mean':
+            focal_loss = cum_loss / num_labels
 
         return focal_loss
+
+        # targets = targets.float()
+        # batch_size, num_labels = outputs.size(0), outputs.size(1)
+        #
+        # inputs = outputs.view(batch_size, num_labels, -1)
+        # targets = targets.view(batch_size, -1)
+        #
+        # ce_loss = functional.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
+        # pt = torch.exp(-ce_loss)
+        # focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        #
+        # if self.reduction == 'mean':
+        #     focal_loss = torch.mean(focal_loss)
+        # elif self.reduction == 'sum':
+        #     focal_loss = torch.sum(focal_loss)
+        #
+        # return focal_loss
 
     def __repr__(self):
         description = f"Focal loss for multichannel segmentation"
