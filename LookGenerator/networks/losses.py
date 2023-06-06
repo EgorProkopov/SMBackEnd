@@ -364,7 +364,7 @@ class GradientPenalty(nn.Module):
             grad_outputs=torch.ones_like(predicts),
             create_graph=True, retain_graph=True, only_inputs=True
         )[0]
-
+        grads = grads.view(grads.shape[0], -1)
         gradient_penalty = torch.pow(grads.norm(2, dim=1) - 1, 2).mean()
 
         return gradient_penalty
