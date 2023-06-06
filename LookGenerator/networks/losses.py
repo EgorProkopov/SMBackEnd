@@ -123,6 +123,7 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
+        targets = targets.float()
         # outputs = outputs.view(-1)
         # targets = targets.view(-1)
 
