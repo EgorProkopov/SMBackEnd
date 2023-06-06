@@ -30,7 +30,7 @@ class ShirtsDataset(Dataset):
         mask_folder = os.listdir(mask_root)
         mask = torch.tensor([])
 
-        for m in mask_folder:
+        for m in mask_folder[1:]:
             mm = Image.open(os.path.join(mask_root, m))
             mm = totensor(mm)
             mask = torch.cat((mask, mm), dim=0)
