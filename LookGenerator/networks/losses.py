@@ -116,6 +116,25 @@ class FocalLossMulti(nn.Module):
         return description
 
 
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=0.8, gamma=2):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+
+    def forward(self, inputs, targets):
+        targets = targets.float()
+        # outputs = outputs.view(-1)
+        # targets = targets.view(-1)
+
+        criterion = nn.CrossEntropyLoss()
+
+        ce_loss = criterion(inputs, targets)
+        ce_exp = torch.exp(-ce_loss)
+        focal_loss = (self.alpha * (1 - ce_exp) ** self.gamma * ce_loss).mean()
+        return focal_loss
+
+
 class DiceLossBin(nn.Module):
     def __init__(self, smooth=1):
         super(DiceLossBin, self).__init__()
@@ -325,7 +344,7 @@ class GradientPenalty(nn.Module):
     Gradient Penalty for Wasserstein loss
     """
 
-    def __init__(self, discriminator, device):
+    def __init__(self):
         """
         Returns:
             discriminator: discriminator network for prediction on image interpolation
@@ -333,12 +352,9 @@ class GradientPenalty(nn.Module):
         """
         super(GradientPenalty, self).__init__()
 
-        self.discriminator = discriminator.to(device)
-        self.device = device
-
     def forward(self, discriminator, fake_image, real_image, device):
         discriminator = discriminator.to(device)
-        t = torch.full(real_image.shape, np.random.rand(1)[0]).to(self.device)
+        t = torch.full(real_image.shape, np.random.rand(1)[0]).to(device)
         interpolation = t * real_image + (1 - t) * fake_image
         interpolation.requires_grad_()
 

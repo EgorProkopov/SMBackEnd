@@ -259,7 +259,7 @@ class Vgg19(nn.Module):
 class BPGM(nn.Module):
     """ Geometric Matching Module
     """
-    def __init__(self, in_channels=12, device='cpu'):
+    def __init__(self, in_channels=11, device='cpu'):
         super(BPGM, self).__init__()
         self.device = device
         n_layers = int(math.log(256, 2)) - 5
