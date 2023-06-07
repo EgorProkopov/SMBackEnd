@@ -51,19 +51,19 @@ class SegGenDataset(Dataset):
 
         channel_list = os.listdir(os.path.join(
             self.root,
-            "image-parse-v3-multichannel",
+            "image-parse-v3.1-multichannel",
             self._files_list[idx]
         ))
 
         for channel in channel_list[1:]:
             if channel.split('_')[1] not in ['001.png', '002.png', '006.png']:
                 target.append(np.array(load_image(
-                    self.root, os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
+                    self.root, os.path.join("image-parse-v3.1-multichannel", self._files_list[idx]),
                     channel, ""
                 )))
             else:
                 target_.append(np.array(load_image(
-                    self.root, os.path.join("image-parse-v3-multichannel", self._files_list[idx]),
+                    self.root, os.path.join("image-parse-v3.1-multichannel", self._files_list[idx]),
                     channel, ""
                 )))
 
