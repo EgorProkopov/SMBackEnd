@@ -47,6 +47,7 @@ class SegGenDataset(Dataset):
         input_ = np.array(load_image(self.root, "cloth", self._files_list[idx], ".jpg"))
 
         target = []
+        target_ = []
 
         channel_list = os.listdir(os.path.join(
             self.root,
@@ -55,21 +56,32 @@ class SegGenDataset(Dataset):
         ))
 
         for channel in channel_list[1:]:
-            if channel.split('_') not in ['001.jpg', '002.jpg', '006.jpg']:
+            if channel.split('_')[1] not in ['001.png', '002.png', '006.png']:
                 target.append(np.array(load_image(
+                    self.root, os.path.join("image-parse-v3.1-multichannel", self._files_list[idx]),
+                    channel, ""
+                )))
+            else:
+                target_.append(np.array(load_image(
                     self.root, os.path.join("image-parse-v3.1-multichannel", self._files_list[idx]),
                     channel, ""
                 )))
 
         target = np.dstack(target)
+        target_ = np.dstack(target_)
+
+        target = np.concatenate((target, target_), axis=2)
 
         transformed = self.augment(image=input_, mask=target)
+
         input_ = to_tensor(transformed['image'])
         target = to_tensor(transformed['mask'])
 
-        input_ = torch.cat((input_, target), dim=0)
+        target_ = target[8:]
 
-        return input_, target
+        input_ = torch.cat((input_, target[:8]), dim=0)
+
+        return input_, target_
 
     def __len__(self):
         """

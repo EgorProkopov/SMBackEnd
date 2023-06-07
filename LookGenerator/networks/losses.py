@@ -36,6 +36,28 @@ class IoUMetricBin(nn.Module):
         return IoU
 
 
+class IoUMetricMulti(nn.Module):
+    def __init__(self):
+        super(IoUMetricMulti).__init__()
+
+        self.bin_metric = IoUMetricBin()
+
+    def forward(self, outputs, targets, smooth=1):
+        targets = targets.float()
+        batch_size, num_labels = outputs.size(0), outputs.size(1)
+
+        cumulative_metric = torch.Tensor([0])
+
+        for label in range(num_labels):
+            out_channel = outputs[:][label]
+            target_channel = targets[:][label]
+
+            cumulative_metric += self.bin_metric(out_channel, target_channel, smooth=smooth)
+
+        metric = cumulative_metric / num_labels
+        return metric
+
+
 class FocalLossBin(nn.Module):
     def __init__(self, alpha=0.8, gamma=2, smooth=1):
         super(FocalLossBin, self).__init__()
@@ -79,18 +101,18 @@ class FocalLossMulti(nn.Module):
         targets = targets.float()
         batch_size, num_labels = outputs.size(0), outputs.size(1)
 
-        cum_loss = torch.Tensor([0]).to(self.device)
+        cumulative_loss = torch.Tensor([0]).to(self.device)
 
         for label in range(num_labels):
             output_channel = outputs[:][label]
             target_channel = targets[:][label]
 
-            cum_loss += self.focal_loss_bin(output_channel, target_channel)
+            cumulative_loss += self.focal_loss_bin(output_channel, target_channel)
 
         if self.reduction == 'sum':
-            focal_loss = cum_loss
+            focal_loss = cumulative_loss
         elif self.reduction == 'mean':
-            focal_loss = cum_loss / num_labels
+            focal_loss = cumulative_loss / num_labels
 
         return focal_loss
 
@@ -364,7 +386,7 @@ class GradientPenalty(nn.Module):
             grad_outputs=torch.ones_like(predicts),
             create_graph=True, retain_graph=True, only_inputs=True
         )[0]
-
+        grads = grads.view(grads.shape[0], -1)
         gradient_penalty = torch.pow(grads.norm(2, dim=1) - 1, 2).mean()
 
         return gradient_penalty
