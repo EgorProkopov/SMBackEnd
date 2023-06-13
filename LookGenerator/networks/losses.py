@@ -563,3 +563,24 @@ class VAELoss(nn.Module):
     def __repr__(self):
         description = f"VAE loss"
         return description
+
+
+class UnitSegmentationLoss(nn.Module):
+    def __init__(self):
+        super(UnitSegmentationLoss, self).__init__()
+
+        self.split_size_or_sections = [1, 12]  # 1+12 channel input image
+
+    def forward(self, outputs, targets):
+        bin_outputs, multi_outputs = torch.split(outputs, self.split_size_or_sections, dim=1)
+        bin_targets, multi_targets = torch.split(targets, self.split_size_or_sections, dim=1)
+
+        bin_loss = FocalLossBin(bin_outputs, bin_targets)
+        multi_loss = FocalLoss(multi_outputs, multi_targets)
+
+        return (bin_loss + multi_loss) / 2
+
+    def __repr__(self):
+        description = f"Loss for unit segmentation"
+        return description
+
