@@ -38,7 +38,7 @@ class Conv3x3(nn.Module):
         if dropout:
             net_list.append(nn.Dropout2d(p=0.33))
         if batch_norm:
-            net_list.append(nn.BatchNorm2d(out_channels))
+            net_list.append(nn.InstanceNorm2d(out_channels))
         if activation_func:
             net_list.append(activation_func)
         net = nn.Sequential(*net_list)
