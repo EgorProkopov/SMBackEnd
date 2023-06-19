@@ -5,7 +5,7 @@ import torch.nn as nn
 class Conv3x3(nn.Module):
     """Convolution module with optional batch_norm, dropout layers and activation function."""
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, activation_func=None, bias=True):
+                 dropout=False, batch_norm=False, instance_norm=False, activation_func=None, bias=True):
         """
 
         Args:
@@ -18,9 +18,9 @@ class Conv3x3(nn.Module):
         """
         super(Conv3x3, self).__init__()
         self.net = self._init_net(in_channels, out_channels,
-                                  dropout, batch_norm, bias, activation_func)
+                                  dropout, batch_norm, instance_norm, bias, activation_func)
 
-    def _init_net(self, in_channels, out_channels, dropout, batch_norm, bias, activation_func):
+    def _init_net(self, in_channels, out_channels, dropout, batch_norm, instance_norm, bias, activation_func):
         """
         Initialize module network
         Args:
@@ -39,6 +39,8 @@ class Conv3x3(nn.Module):
             net_list.append(nn.Dropout2d(p=0.33))
         if batch_norm:
             net_list.append(nn.BatchNorm2d(out_channels))
+        if instance_norm:
+            net_list.append(nn.InstanceNorm2d(out_channels))
         if activation_func:
             net_list.append(activation_func)
         net = nn.Sequential(*net_list)
@@ -74,7 +76,7 @@ class Conv5x5(nn.Module):
     Have optional Dropout and BatchNorm layers after every conv layer and optional residual connection.
     """
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, activation_func=None, bias=True, res_conn=False):
+                 dropout=False, batch_norm=False, instance_norm=False, activation_func=None, bias=True, res_conn=False):
         """
         Args:
             in_channels: Number of channels in the input image
@@ -89,10 +91,16 @@ class Conv5x5(nn.Module):
         self.out_channels = out_channels
         self.res_conn = res_conn
         self.net = nn.Sequential(
-            Conv3x3(self.in_channels, self.out_channels, dropout=dropout, batch_norm=batch_norm,
-                    activation_func=activation_func, bias=bias),
-            Conv3x3(self.out_channels, self.out_channels, dropout=dropout, batch_norm=batch_norm,
-                    activation_func=None, bias=bias)
+            Conv3x3(
+                self.in_channels, self.out_channels,
+                dropout=dropout, batch_norm=batch_norm, instance_norm=instance_norm,
+                activation_func=activation_func, bias=bias
+            ),
+            Conv3x3(
+                self.out_channels, self.out_channels,
+                dropout=dropout, batch_norm=batch_norm, instance_norm=instance_norm,
+                activation_func=activation_func, bias=bias
+            )
         )
         self._activation_func = activation_func
 
@@ -127,7 +135,7 @@ class Conv7x7(nn.Module):
     Have optional Dropout and BatchNorm layers after every conv layer and optional residual connection.
     """
     def __init__(self, in_channels, out_channels,
-                 dropout=False, batch_norm=False, activation_func=None, bias=True, res_conn=False):
+                 dropout=False, batch_norm=False, instance_norm=False, activation_func=None, bias=True, res_conn=False):
         """
         Args:
             in_channels: Number of channels in the input image
@@ -143,12 +151,21 @@ class Conv7x7(nn.Module):
         self.out_channels = out_channels
         self.res_conn = res_conn
         self.net = nn.Sequential(
-            Conv3x3(in_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
-                    activation_func=activation_func, bias=bias),
-            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
-                    activation_func=activation_func, bias=bias),
-            Conv3x3(out_channels, out_channels, dropout=dropout, batch_norm=batch_norm,
-                    activation_func=None, bias=bias)
+            Conv3x3(
+                self.in_channels, self.out_channels,
+                dropout=dropout, batch_norm=batch_norm, instance_norm=instance_norm,
+                activation_func=activation_func, bias=bias
+            ),
+            Conv3x3(
+                self.out_channels, self.out_channels,
+                dropout=dropout, batch_norm=batch_norm, instance_norm=instance_norm,
+                activation_func=activation_func, bias=bias
+            ),
+            Conv3x3(
+                self.out_channels, self.out_channels,
+                dropout=dropout, batch_norm=batch_norm, instance_norm=instance_norm,
+                activation_func=activation_func, bias=bias
+            )
         )
         self._activation_func = activation_func
 
