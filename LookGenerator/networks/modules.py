@@ -191,3 +191,58 @@ class Conv7x7(nn.Module):
             return self._activation_func(out)
         else:
             return out
+
+
+class GatedConv(nn.Module):
+    def __init__(
+            self, input_channels, out_channels,
+            dropout=False, batch_norm=False, instance_norm=False, activation_func=None, bias=True
+    ):
+        super(GatedConv).__init__()
+
+        self.in_channels = input_channels
+        self.out_channels = out_channels
+
+        self.dropout = dropout
+        self.batch_norm = batch_norm
+        self.instance_norm = instance_norm
+
+        self.activation_func = activation_func
+
+        self.bias = bias
+
+        self.conv_net, self.conv_mask_net = self.init_net()
+
+    def init_net(self):
+        conv_list = [nn.Conv2d(self.in_channels, self.out_channels, kernel_size=3, padding=1, bias=self.bias)]
+        if self.dropout:
+            conv_list.append(nn.Dropout2d(p=0.33))
+        if self.batch_norm:
+            conv_list.append(nn.BatchNorm2d(self.out_channels))
+        if self.instance_norm:
+            conv_list.append(nn.InstanceNorm2d(self.out_channels))
+        if self.activation_func:
+            conv_list.append(self.activation_func)
+        conv_net = nn.Sequential(*conv_list)
+
+        conv_mask_list = [nn.Conv2d(self.in_channels, self.out_channels, kernel_size=3, padding=1, bias=self.bias)]
+        if self.dropout:
+            conv_list.append(nn.Dropout2d(p=0.33))
+        if self.batch_norm:
+            conv_list.append(nn.BatchNorm2d(self.out_channels))
+        if self.instance_norm:
+            conv_list.append(nn.InstanceNorm2d(self.out_channels))
+
+        conv_mask_list.append(nn.Sigmoid())
+
+        conv_mask_net = nn.Sequential(*conv_mask_list)
+
+        return conv_net, conv_mask_net
+
+    def forward(self, x, mask):
+        conv_out = self.conv_net(x)
+        mask_out = self.conv_mask_net(mask)
+        gated_out = conv_out * mask_out
+        output = gated_out + x
+
+        return output
