@@ -193,6 +193,18 @@ class Conv7x7(nn.Module):
             return out
 
 
+class PoolingLayer2d(nn.Module):
+    def __init__(self, num_channels):
+        super(PoolingLayer2d).__init__()
+        self.pooling_layer = nn.Conv2d(
+            in_channels=num_channels, out_channels=num_channels,
+            stride=2, padding=1, bias=False
+        )
+
+    def forward(self, x):
+        return self.pooling_layer(x)
+
+
 class GatedConv(nn.Module):
     def __init__(
             self, input_channels, out_channels,
