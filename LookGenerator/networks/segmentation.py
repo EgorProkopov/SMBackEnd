@@ -16,7 +16,8 @@ class UNet(nn.Module):
     UNet model for segmentation with changeable number of layers
     """
     def __init__(
-            self, in_channels=3, out_channels=1, features=(64, 128, 256, 512), final_activation=nn.Sigmoid()
+            self, in_channels=3, out_channels=1, features=(64, 128, 256, 512), final_activation=nn.Sigmoid(),
+            batch_norm=False, instance_norm=False
     ):
         """
         Args:
@@ -36,7 +37,7 @@ class UNet(nn.Module):
         for feature in features:
             self.downs.append(Conv5x5(
                 in_channels, feature,
-                batch_norm=True, dropout=False,
+                batch_norm=batch_norm, instance_norm=instance_norm, dropout=False,
                 activation_func=nn.LeakyReLU())
             )
             in_channels = feature
@@ -47,13 +48,13 @@ class UNet(nn.Module):
 
             self.ups.append(Conv5x5(
                 feature*2, feature,
-                batch_norm=True, dropout=False,
+                batch_norm=batch_norm, instance_norm=instance_norm, dropout=False,
                 activation_func=nn.ReLU())
             )
 
         self.bottleneck = Conv3x3(
             features[-1], features[-1]*2,
-            batch_norm=True, dropout=False,
+            batch_norm=batch_norm, instance_norm=instance_norm, dropout=False,
             activation_func=nn.ReLU()
         )
         self.classifier = nn.Sequential(
