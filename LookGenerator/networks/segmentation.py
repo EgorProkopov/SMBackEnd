@@ -10,7 +10,6 @@ from LookGenerator.networks.modules import Conv3x3, Conv5x5
 from LookGenerator.networks.utils import save_model
 
 
-# TODO: если работает мультикласс, обновить юнетку в modules
 class UNet(nn.Module):
     """
     UNet model for segmentation with changeable number of layers
