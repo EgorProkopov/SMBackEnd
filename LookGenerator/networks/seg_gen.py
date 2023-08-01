@@ -155,13 +155,32 @@ class TwoHeadUNet(nn.Module):
 
         for i, up in enumerate(self.sub_branch_ups):
             residual_clothes = sub_branch_residual_connection[len(self.sub_branch_ups)-1 - i]
-            clothes = torch.cat((clothes, residual_clothes))
+            clothes = torch.cat((clothes, residual_clothes), dim=1)
             clothes = up(clothes)
             sub_branch_residual_connection.append(clothes)
 
         clothes = self.sub_branch_final_conv(clothes)
 
         # Main branch
-        x = self.main_branch_init_conv
+        x = self.main_branch_init_conv(x)
+
+        main_branch_residual_connection = []
+        for i, down in enumerate(self.main_branch_downs):
+            x = torch.cat((x, sub_branch_residual_connection[i]), dim=1)
+            x = down(x)
+            main_branch_residual_connection.append(x)
+
+        for i, up in enumerate(self.main_branch_ups):
+            residual_x = main_branch_residual_connection.pop()
+            clothes_features = sub_branch_residual_connection[len(self.sub_branch_downs) + i]
+            x = torch.cat((x, residual_x, clothes_features), dim=1)
+            x = up(x)
+
+        x = self.main_branch_final_conv(x)
+
+        return x, clothes
+
+
+
 
 
