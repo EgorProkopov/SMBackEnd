@@ -195,7 +195,7 @@ class Conv7x7(nn.Module):
 
 class PoolingLayer2d(nn.Module):
     def __init__(self, num_channels):
-        super(PoolingLayer2d).__init__()
+        super(PoolingLayer2d, self).__init__()
         self.pooling_layer = nn.Conv2d(
             in_channels=num_channels, out_channels=num_channels, kernel_size=4, stride=2, padding=1, bias=False
         )
