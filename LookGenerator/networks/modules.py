@@ -265,14 +265,14 @@ class SelfAttentionBlock(nn.Module):
         Source paper: https://arxiv.org/abs/1805.08318
     """
 
-    def __init__(self, in_dim, activation_func=nn.LeakyReLU()):
+    def __init__(self, num_channels, activation_func=nn.LeakyReLU()):
         super(SelfAttentionBlock, self).__init__()
-        self.chanel_in = in_dim
+        self.chanel_in = num_channels
         self.activation_func = activation_func
 
-        self.f = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
-        self.g = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
-        self.h = nn.Conv2d(in_channels=in_dim, out_channels=in_dim, kernel_size=1)
+        self.f = nn.Conv2d(in_channels=num_channels, out_channels=num_channels // 8, kernel_size=1)
+        self.g = nn.Conv2d(in_channels=num_channels, out_channels=num_channels // 8, kernel_size=1)
+        self.h = nn.Conv2d(in_channels=num_channels, out_channels=num_channels, kernel_size=1)
 
         self.gamma = nn.Parameter(torch.zeros(1))
 
