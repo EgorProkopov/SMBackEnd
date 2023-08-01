@@ -257,3 +257,39 @@ class GatedConv(nn.Module):
         output = gated_out + x
 
         return output
+
+
+class SelfAttentionBlock(nn.Module):
+    r"""
+        Self attention Layer.
+        Source paper: https://arxiv.org/abs/1805.08318
+    """
+
+    def __init__(self, in_dim, activation_func=nn.LeakyReLU()):
+        super(SelfAttentionBlock, self).__init__()
+        self.chanel_in = in_dim
+        self.activation_func = activation_func
+
+        self.f = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.g = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.h = nn.Conv2d(in_channels=in_dim, out_channels=in_dim, kernel_size=1)
+
+        self.gamma = nn.Parameter(torch.zeros(1))
+
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        m_batchsize, C, width, height = x.size()
+
+        f = self.activation_func(self.f(x)).view(m_batchsize, -1, width * height)  # B * (C//8) * (W * H)
+        g = self.activation_func(self.g(x)).view(m_batchsize, -1, width * height)  # B * (C//8) * (W * H)
+        h = self.activation_func(self.h(x)).view(m_batchsize, -1, width * height)  # B * C * (W * H)
+
+        attention = torch.bmm(f.permute(0, 2, 1), g)  # B * (W * H) * (W * H)
+        attention = self.softmax(attention)
+
+        self_attention = torch.bmm(h, attention)  # B * C * (W * H)
+        self_attention = self_attention.view(m_batchsize, C, width, height)  # B * C * W * H
+
+        out = self.gamma * self_attention + x
+        return out
